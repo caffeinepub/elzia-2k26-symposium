@@ -26,7 +26,7 @@ import {
   motion,
   useInView,
 } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /* ─── Nav Links ───────────────────────────────────────────────────────────── */
 const NAV_LINKS = [
@@ -241,6 +241,586 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* ─── NEW: Scroll Progress Bar ────────────────────────────────────────────── */
+function ScrollProgressBar() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const handler = () => {
+      const scrollTop = window.scrollY;
+      const docHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      setProgress(Math.min(100, Math.max(0, pct)));
+    };
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  return (
+    <div
+      className="scroll-progress-bar"
+      style={{ width: `${progress}%` }}
+      aria-hidden="true"
+    />
+  );
+}
+
+/* ─── NEW: Canvas Particle Field ──────────────────────────────────────────── */
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  hue: number;
+}
+
+function ParticleCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number>(0);
+  const particlesRef = useRef<Particle[]>([]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    // Init particles
+    const COUNT = 90;
+    particlesRef.current = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      r: 1.2 + Math.random() * 1.8,
+      hue: 210 + Math.random() * 50, // blue → cyan range
+    }));
+
+    const draw = () => {
+      const { width, height } = canvas;
+      ctx.clearRect(0, 0, width, height);
+
+      const particles = particlesRef.current;
+
+      for (const p of particles) {
+        // Move
+        p.x += p.vx;
+        p.y += p.vy;
+        // Bounce
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+      }
+
+      // Draw connections
+      const LINK_DIST = 120;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < LINK_DIST) {
+            const alpha = (1 - dist / LINK_DIST) * 0.35;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `hsla(230, 80%, 65%, ${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw dots
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 85%, 70%, 0.75)`;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = `hsla(${p.hue}, 90%, 75%, 0.8)`;
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    rafRef.current = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 0.6 }}
+    />
+  );
+}
+
+/* ─── NEW: Circuit Board SVG Lines ────────────────────────────────────────── */
+const CIRCUITS = [
+  { id: "c1", d: "M 80 100 H 200 V 200 H 350 V 120 H 480", delay: 0, dur: 3 },
+  {
+    id: "c2",
+    d: "M 0 280 H 120 V 180 H 260 V 300 H 400",
+    delay: 0.8,
+    dur: 3.5,
+  },
+  { id: "c3", d: "M 600 50 H 720 V 150 H 860 V 80 H 1000", delay: 1.6, dur: 4 },
+  {
+    id: "c4",
+    d: "M 700 350 H 820 V 250 H 980 V 320 H 1100",
+    delay: 0.4,
+    dur: 3.2,
+  },
+  {
+    id: "c5",
+    d: "M 200 450 H 380 V 380 H 520 V 460 H 650",
+    delay: 1.2,
+    dur: 3.8,
+  },
+  {
+    id: "c6",
+    d: "M 900 420 H 1020 V 340 H 1150 V 410 H 1280",
+    delay: 2,
+    dur: 4.2,
+  },
+  {
+    id: "c7",
+    d: "M 50 500 H 180 V 420 H 320 V 490 H 460",
+    delay: 0.6,
+    dur: 3.6,
+  },
+  {
+    id: "c8",
+    d: "M 780 180 H 920 V 280 H 1060 V 200 H 1180",
+    delay: 1.8,
+    dur: 3.4,
+  },
+];
+
+function CircuitLines() {
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ opacity: 0.18 }}
+      aria-hidden="true"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <defs>
+        <filter id="circuit-glow">
+          <feGaussianBlur stdDeviation="1.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      {CIRCUITS.map((c) => (
+        <path
+          key={c.id}
+          d={c.d}
+          fill="none"
+          stroke="oklch(0.72 0.20 215)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          filter="url(#circuit-glow)"
+          style={{
+            strokeDasharray: 300,
+            strokeDashoffset: 300,
+            animation: `circuitFlow ${c.dur}s ease-in-out ${c.delay}s infinite`,
+          }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/* ─── NEW: Sound Wave SVG ─────────────────────────────────────────────────── */
+function SoundWave({ side }: { side: "left" | "right" }) {
+  const waveRef = useRef<SVGPathElement>(null);
+  const raf = useRef<number>(0);
+  const t = useRef(0);
+
+  useEffect(() => {
+    const el = waveRef.current;
+    if (!el) return;
+
+    const W = 160;
+    const H = 80;
+    const points = 8;
+
+    const animate = () => {
+      t.current += 0.03;
+      let d = `M 0 ${H / 2}`;
+      for (let i = 0; i <= points; i++) {
+        const x = (i / points) * W;
+        const amp = 12 + Math.sin(t.current * 0.7 + i * 0.8) * 6;
+        const y = H / 2 + Math.sin(t.current + i * 1.2) * amp;
+        d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+      }
+      el.setAttribute("d", d);
+      raf.current = requestAnimationFrame(animate);
+    };
+    raf.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf.current);
+  }, []);
+
+  return (
+    <div
+      className="absolute top-1/2 -translate-y-1/2 pointer-events-none"
+      style={{
+        [side === "left" ? "left" : "right"]: "clamp(10px, 5vw, 80px)",
+        opacity: 0.45,
+        filter: "blur(0.5px)",
+      }}
+      aria-hidden="true"
+    >
+      <svg
+        width="160"
+        height="80"
+        style={{ overflow: "visible" }}
+        role="presentation"
+        aria-hidden="true"
+      >
+        <defs>
+          <filter id={`wave-glow-${side}`}>
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <path
+          ref={waveRef}
+          fill="none"
+          stroke="oklch(0.72 0.20 215)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          filter={`url(#wave-glow-${side})`}
+          style={{ boxShadow: "0 0 8px oklch(0.72 0.20 215)" }}
+        />
+        {/* Secondary faint wave */}
+        <path
+          d="M 0 40 L 160 40"
+          fill="none"
+          stroke="oklch(0.62 0.22 255 / 0.3)"
+          strokeWidth="1"
+          strokeDasharray="4 6"
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
+/* ─── NEW: Glitch Title ───────────────────────────────────────────────────── */
+function GlitchTitle({ children }: { children: React.ReactNode }) {
+  const [isGlitching, setIsGlitching] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    const scheduleGlitch = () => {
+      const delay = 4000 + Math.random() * 2000;
+      timerRef.current = setTimeout(() => {
+        setIsGlitching(true);
+        setTimeout(() => {
+          setIsGlitching(false);
+          scheduleGlitch();
+        }, 450);
+      }, delay);
+    };
+    scheduleGlitch();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  return (
+    <span
+      className={cn("glitch-title", isGlitching && "glitching")}
+      data-text="ELZIA"
+    >
+      {children}
+    </span>
+  );
+}
+
+/* ─── NEW: Digit Flip (Framer Motion AnimatePresence) ─────────────────────── */
+function FlipDigit({ value, label }: { value: number; label: string }) {
+  const paddedVal = pad(value);
+
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        className="relative w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 rounded-lg flex items-center justify-center overflow-hidden"
+        style={{
+          background: "oklch(0.08 0.025 260)",
+          border: "1px solid oklch(0.62 0.22 255 / 0.3)",
+          boxShadow: "0 0 20px 0 oklch(0.62 0.22 255 / 0.1)",
+        }}
+      >
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={paddedVal}
+            initial={{ y: -30, opacity: 0, scale: 0.8 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 30, opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+            className="timer-digit font-display text-2xl sm:text-3xl lg:text-4xl font-[800] text-gradient-gold absolute"
+            aria-live="polite"
+          >
+            {paddedVal}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+      <span className="text-xs text-muted-foreground mt-2 tracking-widest uppercase">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/* ─── NEW: Section Header with Char Reveal ────────────────────────────────── */
+function RevealHeading({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  // Flatten children to string for char splitting; fallback to rendering as-is
+  const text = typeof children === "string" ? children : null;
+
+  if (!text) {
+    // Non-string children: just fade in the whole heading
+    return (
+      <motion.h2
+        ref={ref}
+        initial={{ opacity: 0, y: 24 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className={className}
+      >
+        {children}
+      </motion.h2>
+    );
+  }
+
+  // Build stable char entries outside map to avoid index-key lint
+  const chars = Array.from(text, (char, pos) => ({
+    key: `c${pos}`,
+    char,
+    delay: pos * 0.03,
+  }));
+
+  return (
+    <h2 ref={ref} className={className} aria-label={text}>
+      {chars.map(({ key, char, delay }) => (
+        <motion.span
+          key={key}
+          className="char-reveal-char"
+          initial={{ opacity: 0, y: 18 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+          transition={{
+            duration: 0.5,
+            ease: "easeOut",
+            delay,
+          }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </h2>
+  );
+}
+
+/* ─── NEW: Ripple Button ──────────────────────────────────────────────────── */
+function RippleButton({
+  children,
+  className,
+  onClick,
+  size,
+  variant,
+  "data-ocid": dataOcid,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  size?: "lg" | "sm" | "default";
+  variant?: "outline" | "default";
+  "data-ocid"?: string;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [ripples, setRipples] = useState<
+    { id: number; x: number; y: number; size: number }[]
+  >([]);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const btn = btnRef.current;
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const size = Math.max(rect.width, rect.height) * 2;
+      const id = Date.now();
+      setRipples((prev) => [...prev, { id, x, y, size }]);
+      setTimeout(() => {
+        setRipples((prev) => prev.filter((r) => r.id !== id));
+      }, 700);
+      onClick?.();
+    },
+    [onClick],
+  );
+
+  return (
+    <Button
+      ref={btnRef}
+      size={size}
+      variant={variant}
+      data-ocid={dataOcid}
+      className={cn("btn-ripple", className)}
+      onClick={handleClick}
+    >
+      {children}
+      {ripples.map((r) => (
+        <span
+          key={r.id}
+          className="ripple-wave"
+          style={{
+            width: r.size,
+            height: r.size,
+            left: r.x - r.size / 2,
+            top: r.y - r.size / 2,
+          }}
+        />
+      ))}
+    </Button>
+  );
+}
+
+/* ─── NEW: Energy Card (border sweep on hover) ────────────────────────────── */
+function EnergyEventCard({
+  icon: Icon,
+  title,
+  tagline,
+  description,
+  detail,
+  color,
+  index,
+}: {
+  icon: React.ElementType;
+  title: string;
+  tagline: string;
+  description: string;
+  detail: string;
+  color: "gold" | "cyan";
+  index: number;
+}) {
+  const isGold = color === "gold";
+  return (
+    <motion.article
+      data-ocid={`events.item.${index}`}
+      whileHover={{ y: -6, scale: 1.015 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className={cn(
+        "energy-card relative group p-6 lg:p-8 rounded-xl border bg-card overflow-hidden",
+        isGold
+          ? "card-glow-gold border-border"
+          : "card-glow-cyan border-border",
+      )}
+    >
+      {/* Inner content sits above energy border pseudo-element */}
+      <div className="relative z-10">
+        {/* Ambient overlay */}
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"
+          style={{
+            background: isGold
+              ? "radial-gradient(ellipse at 30% 0%, oklch(0.62 0.22 255 / 0.07) 0%, transparent 60%)"
+              : "radial-gradient(ellipse at 30% 0%, oklch(0.72 0.20 215 / 0.07) 0%, transparent 60%)",
+          }}
+        />
+
+        {/* Icon */}
+        <div
+          className="mb-5 inline-flex items-center justify-center w-12 h-12 rounded-lg"
+          style={{
+            background: isGold
+              ? "oklch(0.62 0.22 255 / 0.12)"
+              : "oklch(0.72 0.20 215 / 0.12)",
+            border: isGold
+              ? "1px solid oklch(0.62 0.22 255 / 0.25)"
+              : "1px solid oklch(0.72 0.20 215 / 0.25)",
+          }}
+        >
+          <Icon
+            className="h-5 w-5"
+            style={{
+              color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
+            }}
+          />
+        </div>
+
+        {/* Tagline */}
+        <p
+          className="text-xs font-semibold tracking-[0.18em] uppercase mb-1"
+          style={{
+            color: isGold
+              ? "oklch(0.62 0.22 255 / 0.8)"
+              : "oklch(0.72 0.20 215 / 0.8)",
+          }}
+        >
+          {tagline}
+        </p>
+
+        {/* Title */}
+        <h3 className="font-display text-xl font-[700] tracking-tight mb-3 text-foreground">
+          {title}
+        </h3>
+
+        <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+          {description}
+        </p>
+
+        {/* Detail badge */}
+        <span
+          className="inline-block text-xs font-medium px-3 py-1 rounded-full"
+          style={{
+            background: isGold
+              ? "oklch(0.62 0.22 255 / 0.1)"
+              : "oklch(0.72 0.20 215 / 0.1)",
+            color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
+            border: isGold
+              ? "1px solid oklch(0.62 0.22 255 / 0.2)"
+              : "1px solid oklch(0.72 0.20 215 / 0.2)",
+          }}
+        >
+          {detail}
+        </span>
+      </div>
+    </motion.article>
+  );
+}
+
 /* ─── Navbar ──────────────────────────────────────────────────────────────── */
 function Navbar() {
   const scrolled = useScrolled();
@@ -259,7 +839,10 @@ function Navbar() {
           ? "bg-background/90 backdrop-blur-md border-b border-border"
           : "bg-transparent",
       )}
-      style={{ height: "var(--nav-height)" }}
+      style={{
+        height: "var(--nav-height)",
+        paddingTop: "3px" /* space for progress bar */,
+      }}
     >
       <nav className="max-w-7xl mx-auto h-full flex items-center justify-between px-6 lg:px-8">
         {/* Brand */}
@@ -377,9 +960,18 @@ function HeroSection() {
       id="home"
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
     >
+      {/* Particle field canvas */}
+      <ParticleCanvas />
+
+      {/* Circuit board lines */}
+      <CircuitLines />
+
       {/* Background mesh */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-background" />
+        <div
+          className="absolute inset-0 bg-background"
+          style={{ zIndex: -1 }}
+        />
         <div className="absolute inset-0 scanlines opacity-30" />
         {/* Radial glow from center */}
         <div
@@ -402,6 +994,10 @@ function HeroSection() {
         <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-background to-transparent" />
       </div>
 
+      {/* Sound wave lines — left & right */}
+      <SoundWave side="left" />
+      <SoundWave side="right" />
+
       {/* Corner accents */}
       <div className="absolute top-24 left-8 w-16 h-16 border-l-2 border-t-2 border-primary/30 pointer-events-none" />
       <div className="absolute top-24 right-8 w-16 h-16 border-r-2 border-t-2 border-primary/30 pointer-events-none" />
@@ -420,7 +1016,7 @@ function HeroSection() {
         >
           <div
             className="relative flex justify-center"
-            style={{ height: "160px", width: "320px" }}
+            style={{ height: "220px", width: "420px" }}
           >
             {/* Dragon spark particles */}
             {(
@@ -444,7 +1040,7 @@ function HeroSection() {
               ] as const
             ).map((pid, i) => {
               const angle = (i / 16) * 360;
-              const radius = 90 + ((i * 7) % 60);
+              const radius = 120 + ((i * 7) % 70);
               const x = Math.cos((angle * Math.PI) / 180) * radius;
               const y = Math.sin((angle * Math.PI) / 180) * radius * 0.5;
               const size = 2 + (i % 3) * 2;
@@ -486,7 +1082,7 @@ function HeroSection() {
             {/* Extra bright spark streaks */}
             {(["s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"] as const).map(
               (sid, i) => {
-                const spread = [-120, -80, -50, -20, 20, 50, 80, 120][i];
+                const spread = [-150, -100, -65, -25, 25, 65, 100, 150][i];
                 return (
                   <motion.div
                     key={sid}
@@ -524,8 +1120,8 @@ function HeroSection() {
             <div
               className="absolute pointer-events-none"
               style={{
-                width: "340px",
-                height: "80px",
+                width: "440px",
+                height: "100px",
                 bottom: "-10px",
                 left: "50%",
                 transform: "translateX(-50%)",
@@ -545,8 +1141,8 @@ function HeroSection() {
               }}
               className="absolute pointer-events-none"
               style={{
-                width: "280px",
-                height: "280px",
+                width: "360px",
+                height: "360px",
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
@@ -567,8 +1163,8 @@ function HeroSection() {
               }}
               className="absolute pointer-events-none rounded-full"
               style={{
-                width: "240px",
-                height: "240px",
+                width: "320px",
+                height: "320px",
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
@@ -581,8 +1177,8 @@ function HeroSection() {
             <div
               className="absolute"
               style={{
-                width: "220px",
-                height: "220px",
+                width: "300px",
+                height: "300px",
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
@@ -621,6 +1217,22 @@ function HeroSection() {
                   zIndex: 11,
                 }}
               />
+
+              {/* Dragon eye red glow pulse */}
+              <div
+                className="dragon-eye-glow absolute rounded-full pointer-events-none"
+                style={{
+                  width: "16px",
+                  height: "8px",
+                  background: "rgba(220, 38, 38, 0.85)",
+                  top: "28%",
+                  left: "42%",
+                  transform: "translateX(-50%)",
+                  borderRadius: "50%",
+                  zIndex: 20,
+                }}
+                aria-hidden="true"
+              />
             </div>
 
             {/* Bottom cut glowing edge line */}
@@ -633,9 +1245,9 @@ function HeroSection() {
               }}
               className="absolute pointer-events-none"
               style={{
-                width: "200px",
+                width: "280px",
                 height: "3px",
-                bottom: "57px",
+                bottom: "72px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 background:
@@ -664,7 +1276,7 @@ function HeroSection() {
           </Badge>
         </motion.div>
 
-        {/* Title */}
+        {/* Title with glitch effect */}
         <motion.h1
           variants={fadeUp}
           initial="hidden"
@@ -672,7 +1284,9 @@ function HeroSection() {
           custom={1}
           className="font-display text-6xl sm:text-8xl lg:text-9xl font-[800] leading-none tracking-tight mb-3"
         >
-          <span className="text-gradient-gold">ELZIA</span>
+          <GlitchTitle>
+            <span className="text-gradient-gold">ELZIA</span>
+          </GlitchTitle>
           <span className="text-foreground/90"> 2K26</span>
         </motion.h1>
 
@@ -721,7 +1335,7 @@ function HeroSection() {
           </span>
         </motion.div>
 
-        {/* Countdown Timer */}
+        {/* Countdown Timer with digit flip */}
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -740,26 +1354,7 @@ function HeroSection() {
               { value: seconds, label: "Sec" },
             ].map(({ value, label }, i) => (
               <div key={label} className="flex items-center gap-3 sm:gap-5">
-                <div className="flex flex-col items-center">
-                  <div
-                    className="relative w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 rounded-lg flex items-center justify-center"
-                    style={{
-                      background: "oklch(0.08 0.025 260)",
-                      border: "1px solid oklch(0.62 0.22 255 / 0.3)",
-                      boxShadow: "0 0 20px 0 oklch(0.62 0.22 255 / 0.1)",
-                    }}
-                  >
-                    <span
-                      className="timer-digit font-display text-2xl sm:text-3xl lg:text-4xl font-[800] text-gradient-gold"
-                      aria-live="polite"
-                    >
-                      {pad(value)}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground mt-2 tracking-widest uppercase">
-                    {label}
-                  </span>
-                </div>
+                <FlipDigit value={value} label={label} />
                 {i < 3 && (
                   <span className="text-2xl sm:text-3xl font-[800] text-primary mb-4 leading-none">
                     :
@@ -770,7 +1365,7 @@ function HeroSection() {
           </div>
         </motion.div>
 
-        {/* CTAs */}
+        {/* CTAs with ripple */}
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -778,7 +1373,7 @@ function HeroSection() {
           custom={5}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Button
+          <RippleButton
             size="lg"
             data-ocid="hero.primary_button"
             className="bg-primary text-primary-foreground hover:bg-primary/85 glow-gold font-bold tracking-wide text-base px-8 py-6 h-auto font-display"
@@ -789,8 +1384,8 @@ function HeroSection() {
             }}
           >
             Register Now — ₹150
-          </Button>
-          <Button
+          </RippleButton>
+          <RippleButton
             size="lg"
             variant="outline"
             data-ocid="hero.secondary_button"
@@ -802,7 +1397,7 @@ function HeroSection() {
             }}
           >
             Explore Events
-          </Button>
+          </RippleButton>
         </motion.div>
       </div>
 
@@ -836,118 +1431,6 @@ function HeroSection() {
   );
 }
 
-/* ─── Event Card ──────────────────────────────────────────────────────────── */
-function EventCard({
-  icon: Icon,
-  title,
-  tagline,
-  description,
-  detail,
-  color,
-  index,
-}: {
-  icon: React.ElementType;
-  title: string;
-  tagline: string;
-  description: string;
-  detail: string;
-  color: "gold" | "cyan";
-  index: number;
-}) {
-  const isGold = color === "gold";
-  return (
-    <motion.article
-      data-ocid={`events.item.${index}`}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className={cn(
-        "relative group p-6 lg:p-8 rounded-xl border bg-card overflow-hidden",
-        isGold
-          ? "card-glow-gold border-border"
-          : "card-glow-cyan border-border",
-      )}
-    >
-      {/* Ambient overlay */}
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{
-          background: isGold
-            ? "radial-gradient(ellipse at 30% 0%, oklch(0.62 0.22 255 / 0.07) 0%, transparent 60%)"
-            : "radial-gradient(ellipse at 30% 0%, oklch(0.72 0.20 215 / 0.07) 0%, transparent 60%)",
-        }}
-      />
-
-      {/* Top accent */}
-      <div
-        className="absolute top-0 left-0 right-0 h-px transition-all duration-500"
-        style={{
-          background: isGold
-            ? "linear-gradient(90deg, transparent, oklch(0.62 0.22 255 / 0.5), transparent)"
-            : "linear-gradient(90deg, transparent, oklch(0.72 0.20 215 / 0.5), transparent)",
-          opacity: 0,
-        }}
-      />
-
-      {/* Icon */}
-      <div
-        className="mb-5 inline-flex items-center justify-center w-12 h-12 rounded-lg"
-        style={{
-          background: isGold
-            ? "oklch(0.62 0.22 255 / 0.12)"
-            : "oklch(0.72 0.20 215 / 0.12)",
-          border: isGold
-            ? "1px solid oklch(0.62 0.22 255 / 0.25)"
-            : "1px solid oklch(0.72 0.20 215 / 0.25)",
-        }}
-      >
-        <Icon
-          className="h-5 w-5"
-          style={{
-            color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
-          }}
-        />
-      </div>
-
-      {/* Tagline */}
-      <p
-        className="text-xs font-semibold tracking-[0.18em] uppercase mb-1"
-        style={{
-          color: isGold
-            ? "oklch(0.62 0.22 255 / 0.8)"
-            : "oklch(0.72 0.20 215 / 0.8)",
-        }}
-      >
-        {tagline}
-      </p>
-
-      {/* Title */}
-      <h3 className="font-display text-xl font-[700] tracking-tight mb-3 text-foreground">
-        {title}
-      </h3>
-
-      <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-        {description}
-      </p>
-
-      {/* Detail badge */}
-      <span
-        className="inline-block text-xs font-medium px-3 py-1 rounded-full"
-        style={{
-          background: isGold
-            ? "oklch(0.62 0.22 255 / 0.1)"
-            : "oklch(0.72 0.20 215 / 0.1)",
-          color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
-          border: isGold
-            ? "1px solid oklch(0.62 0.22 255 / 0.2)"
-            : "1px solid oklch(0.72 0.20 215 / 0.2)",
-        }}
-      >
-        {detail}
-      </span>
-    </motion.article>
-  );
-}
-
 /* ─── Events Section ──────────────────────────────────────────────────────── */
 function EventsSection() {
   return (
@@ -956,11 +1439,11 @@ function EventsSection() {
         {/* Technical Events */}
         <FadeUp className="text-center mb-16">
           <SectionLabel>Technical Events</SectionLabel>
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-[800] tracking-tight text-balance">
+          <RevealHeading className="font-display text-4xl sm:text-5xl lg:text-6xl font-[800] tracking-tight text-balance">
             <span className="text-gradient-gold">Ignite</span> Your
             <br />
             Technical Edge
-          </h2>
+          </RevealHeading>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto text-base">
             Four high-stakes technical challenges designed to push the
             boundaries of EEE knowledge.
@@ -970,7 +1453,7 @@ function EventsSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-24">
           {TECH_EVENTS.map((event, i) => (
             <FadeUp key={event.title} delay={i * 1.5}>
-              <EventCard
+              <EnergyEventCard
                 {...event}
                 color={event.color as "gold" | "cyan"}
                 index={i + 1}
@@ -982,9 +1465,9 @@ function EventsSection() {
         {/* Non-Technical Events */}
         <FadeUp className="text-center mb-16">
           <SectionLabel>Non-Technical Events</SectionLabel>
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-[800] tracking-tight text-balance">
+          <RevealHeading className="font-display text-4xl sm:text-5xl lg:text-6xl font-[800] tracking-tight text-balance">
             Play Hard, <span className="text-gradient-cyan">Win Harder</span>
-          </h2>
+          </RevealHeading>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto text-base">
             Take a break from circuits and code — compete in gaming, strategy,
             and team challenges.
@@ -994,7 +1477,7 @@ function EventsSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {NON_TECH_EVENTS.map((event, i) => (
             <FadeUp key={event.title} delay={i * 1.5}>
-              <EventCard
+              <EnergyEventCard
                 {...event}
                 color={event.color as "gold" | "cyan"}
                 index={i + 5}
@@ -1026,11 +1509,9 @@ function PrizesSection() {
       <div className="max-w-6xl mx-auto relative">
         <FadeUp className="text-center mb-16">
           <SectionLabel>Rewards</SectionLabel>
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-[800] tracking-tight text-balance">
-            Certificates, Prizes &amp;
-            <br />
-            <span className="text-gradient-gold">Take-Away Kits</span>
-          </h2>
+          <RevealHeading className="font-display text-4xl sm:text-5xl lg:text-6xl font-[800] tracking-tight text-balance">
+            Certificates, Prizes &amp; Take-Away Kits
+          </RevealHeading>
           <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
             Every participant wins. The best ones win even bigger.
           </p>
@@ -1039,18 +1520,26 @@ function PrizesSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {PRIZES.map((prize, i) => (
             <FadeUp key={prize.title} delay={i * 1.5}>
-              <div
+              <motion.div
                 data-ocid={`prizes.item.${i + 1}`}
-                className="group p-6 rounded-xl border border-border bg-card hover:border-primary/40 transition-all duration-300 hover:shadow-[0_0_24px_0_oklch(0.78_0.18_80_/_0.12)]"
+                whileHover={{ y: -4, scale: 1.02 }}
+                transition={{ duration: 0.25 }}
+                className="group p-6 rounded-xl border border-border bg-card hover:border-primary/40 transition-colors duration-300 hover:shadow-[0_0_24px_0_oklch(0.78_0.18_80_/_0.12)]"
               >
-                <div className="text-3xl mb-4">{prize.icon}</div>
+                <motion.div
+                  className="text-3xl mb-4"
+                  whileHover={{ scale: 1.2, rotate: [0, -8, 8, 0] }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {prize.icon}
+                </motion.div>
                 <h3 className="font-display text-lg font-[700] mb-2 text-foreground">
                   {prize.title}
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {prize.description}
                 </p>
-              </div>
+              </motion.div>
             </FadeUp>
           ))}
         </div>
@@ -1087,9 +1576,9 @@ function RulesSection() {
       <div className="max-w-6xl mx-auto">
         <FadeUp className="text-center mb-16">
           <SectionLabel>Guidelines</SectionLabel>
-          <h2 className="font-display text-4xl sm:text-5xl font-[800] tracking-tight">
-            Rules &amp; <span className="text-gradient-cyan">Regulations</span>
-          </h2>
+          <RevealHeading className="font-display text-4xl sm:text-5xl font-[800] tracking-tight">
+            Rules &amp; Regulations
+          </RevealHeading>
         </FadeUp>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -1326,7 +1815,7 @@ function RegisterSection() {
                 </ul>
               </div>
 
-              <Button
+              <RippleButton
                 size="lg"
                 data-ocid="register.primary_button"
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/85 glow-gold font-bold text-base py-6 h-auto font-display"
@@ -1340,7 +1829,7 @@ function RegisterSection() {
               >
                 <Gift className="mr-2 h-5 w-5" />
                 Fill Registration Form
-              </Button>
+              </RippleButton>
             </div>
           </FadeUp>
         </div>
@@ -1703,6 +2192,8 @@ function Footer() {
 export default function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Scroll progress bar — fixed at very top */}
+      <ScrollProgressBar />
       <Navbar />
       <main>
         <HeroSection />
