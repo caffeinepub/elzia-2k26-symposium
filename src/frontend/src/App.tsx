@@ -386,7 +386,7 @@ function HeroSection() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 50% 40%, oklch(0.78 0.18 80 / 0.08) 0%, oklch(0.82 0.19 195 / 0.05) 40%, transparent 70%)",
+              "radial-gradient(ellipse 80% 60% at 50% 40%, oklch(0.62 0.22 255 / 0.08) 0%, oklch(0.72 0.20 215 / 0.05) 40%, transparent 70%)",
           }}
         />
         {/* Geometric grid lines */}
@@ -394,7 +394,7 @@ function HeroSection() {
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
-              "linear-gradient(oklch(0.78 0.18 80) 1px, transparent 1px), linear-gradient(90deg, oklch(0.78 0.18 80) 1px, transparent 1px)",
+              "linear-gradient(oklch(0.62 0.22 255) 1px, transparent 1px), linear-gradient(90deg, oklch(0.62 0.22 255) 1px, transparent 1px)",
             backgroundSize: "80px 80px",
           }}
         />
@@ -428,7 +428,7 @@ function HeroSection() {
               }}
               className="absolute inset-0 rounded-full"
               style={{
-                background: "oklch(0.78 0.18 80 / 0.35)",
+                background: "oklch(0.62 0.22 255 / 0.35)",
                 filter: "blur(28px)",
                 transform: "scale(1.6)",
               }}
@@ -444,7 +444,7 @@ function HeroSection() {
               }}
               className="absolute inset-0 rounded-full"
               style={{
-                background: "oklch(0.82 0.19 195 / 0.25)",
+                background: "oklch(0.72 0.20 215 / 0.25)",
                 filter: "blur(20px)",
                 transform: "scale(1.5)",
               }}
@@ -460,7 +460,7 @@ function HeroSection() {
               className="absolute inset-0 rounded-full pointer-events-none"
               style={{
                 background:
-                  "conic-gradient(from 0deg, transparent 0%, oklch(0.78 0.18 80 / 0.6) 20%, transparent 40%)",
+                  "conic-gradient(from 0deg, transparent 0%, oklch(0.62 0.22 255 / 0.6) 20%, transparent 40%)",
                 transform: "scale(1.1)",
                 borderRadius: "50%",
               }}
@@ -472,9 +472,9 @@ function HeroSection() {
               style={{
                 borderWidth: "3px",
                 borderStyle: "solid",
-                borderColor: "oklch(0.78 0.18 80 / 0.8)",
+                borderColor: "oklch(0.62 0.22 255 / 0.8)",
                 boxShadow:
-                  "0 0 60px 16px oklch(0.78 0.18 80 / 0.4), 0 0 120px 40px oklch(0.78 0.18 80 / 0.15), inset 0 0 30px oklch(0.78 0.18 80 / 0.1)",
+                  "0 0 60px 16px oklch(0.62 0.22 255 / 0.4), 0 0 120px 40px oklch(0.62 0.22 255 / 0.15), inset 0 0 30px oklch(0.62 0.22 255 / 0.1)",
               }}
             />
           </div>
@@ -576,9 +576,9 @@ function HeroSection() {
                   <div
                     className="relative w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 rounded-lg flex items-center justify-center"
                     style={{
-                      background: "oklch(0.12 0.015 250)",
-                      border: "1px solid oklch(0.78 0.18 80 / 0.3)",
-                      boxShadow: "0 0 20px 0 oklch(0.78 0.18 80 / 0.1)",
+                      background: "oklch(0.08 0.025 260)",
+                      border: "1px solid oklch(0.62 0.22 255 / 0.3)",
+                      boxShadow: "0 0 20px 0 oklch(0.62 0.22 255 / 0.1)",
                     }}
                   >
                     <span
@@ -704,8 +704,8 @@ function EventCard({
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         style={{
           background: isGold
-            ? "radial-gradient(ellipse at 30% 0%, oklch(0.78 0.18 80 / 0.07) 0%, transparent 60%)"
-            : "radial-gradient(ellipse at 30% 0%, oklch(0.82 0.19 195 / 0.07) 0%, transparent 60%)",
+            ? "radial-gradient(ellipse at 30% 0%, oklch(0.62 0.22 255 / 0.07) 0%, transparent 60%)"
+            : "radial-gradient(ellipse at 30% 0%, oklch(0.72 0.20 215 / 0.07) 0%, transparent 60%)",
         }}
       />
 
@@ -714,8 +714,8 @@ function EventCard({
         className="absolute top-0 left-0 right-0 h-px transition-all duration-500"
         style={{
           background: isGold
-            ? "linear-gradient(90deg, transparent, oklch(0.78 0.18 80 / 0.5), transparent)"
-            : "linear-gradient(90deg, transparent, oklch(0.82 0.19 195 / 0.5), transparent)",
+            ? "linear-gradient(90deg, transparent, oklch(0.62 0.22 255 / 0.5), transparent)"
+            : "linear-gradient(90deg, transparent, oklch(0.72 0.20 215 / 0.5), transparent)",
           opacity: 0,
         }}
       />
@@ -725,17 +725,17 @@ function EventCard({
         className="mb-5 inline-flex items-center justify-center w-12 h-12 rounded-lg"
         style={{
           background: isGold
-            ? "oklch(0.78 0.18 80 / 0.12)"
-            : "oklch(0.82 0.19 195 / 0.12)",
+            ? "oklch(0.62 0.22 255 / 0.12)"
+            : "oklch(0.72 0.20 215 / 0.12)",
           border: isGold
-            ? "1px solid oklch(0.78 0.18 80 / 0.25)"
-            : "1px solid oklch(0.82 0.19 195 / 0.25)",
+            ? "1px solid oklch(0.62 0.22 255 / 0.25)"
+            : "1px solid oklch(0.72 0.20 215 / 0.25)",
         }}
       >
         <Icon
           className="h-5 w-5"
           style={{
-            color: isGold ? "oklch(0.78 0.18 80)" : "oklch(0.82 0.19 195)",
+            color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
           }}
         />
       </div>
@@ -745,8 +745,8 @@ function EventCard({
         className="text-xs font-semibold tracking-[0.18em] uppercase mb-1"
         style={{
           color: isGold
-            ? "oklch(0.78 0.18 80 / 0.8)"
-            : "oklch(0.82 0.19 195 / 0.8)",
+            ? "oklch(0.62 0.22 255 / 0.8)"
+            : "oklch(0.72 0.20 215 / 0.8)",
         }}
       >
         {tagline}
@@ -766,12 +766,12 @@ function EventCard({
         className="inline-block text-xs font-medium px-3 py-1 rounded-full"
         style={{
           background: isGold
-            ? "oklch(0.78 0.18 80 / 0.1)"
-            : "oklch(0.82 0.19 195 / 0.1)",
-          color: isGold ? "oklch(0.78 0.18 80)" : "oklch(0.82 0.19 195)",
+            ? "oklch(0.62 0.22 255 / 0.1)"
+            : "oklch(0.72 0.20 215 / 0.1)",
+          color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
           border: isGold
-            ? "1px solid oklch(0.78 0.18 80 / 0.2)"
-            : "1px solid oklch(0.82 0.19 195 / 0.2)",
+            ? "1px solid oklch(0.62 0.22 255 / 0.2)"
+            : "1px solid oklch(0.72 0.20 215 / 0.2)",
         }}
       >
         {detail}
@@ -851,7 +851,7 @@ function PrizesSection() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 60% 50% at 50% 50%, oklch(0.78 0.18 80 / 0.05) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 50% at 50% 50%, oklch(0.62 0.22 255 / 0.05) 0%, transparent 70%)",
         }}
       />
 
@@ -930,14 +930,14 @@ function RulesSection() {
             <div
               data-ocid="rules.panel"
               className="p-6 lg:p-8 rounded-xl border bg-card"
-              style={{ borderColor: "oklch(0.78 0.18 80 / 0.3)" }}
+              style={{ borderColor: "oklch(0.62 0.22 255 / 0.3)" }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center"
                   style={{
-                    background: "oklch(0.78 0.18 80 / 0.12)",
-                    border: "1px solid oklch(0.78 0.18 80 / 0.25)",
+                    background: "oklch(0.62 0.22 255 / 0.12)",
+                    border: "1px solid oklch(0.62 0.22 255 / 0.25)",
                   }}
                 >
                   <BookOpen className="h-4 w-4 text-primary" />
@@ -955,8 +955,8 @@ function RulesSection() {
                     <span
                       className="mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-xs font-bold"
                       style={{
-                        background: "oklch(0.78 0.18 80 / 0.12)",
-                        color: "oklch(0.78 0.18 80)",
+                        background: "oklch(0.62 0.22 255 / 0.12)",
+                        color: "oklch(0.62 0.22 255)",
                       }}
                     >
                       {paperRules.indexOf(rule) + 1}
@@ -973,19 +973,19 @@ function RulesSection() {
             <div
               data-ocid="rules.card"
               className="p-6 lg:p-8 rounded-xl border bg-card"
-              style={{ borderColor: "oklch(0.82 0.19 195 / 0.3)" }}
+              style={{ borderColor: "oklch(0.72 0.20 215 / 0.3)" }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center"
                   style={{
-                    background: "oklch(0.82 0.19 195 / 0.12)",
-                    border: "1px solid oklch(0.82 0.19 195 / 0.25)",
+                    background: "oklch(0.72 0.20 215 / 0.12)",
+                    border: "1px solid oklch(0.72 0.20 215 / 0.25)",
                   }}
                 >
                   <Shield
                     className="h-4 w-4"
-                    style={{ color: "oklch(0.82 0.19 195)" }}
+                    style={{ color: "oklch(0.72 0.20 215)" }}
                   />
                 </div>
                 <h3 className="font-display text-xl font-[700] text-gradient-cyan">
@@ -1001,8 +1001,8 @@ function RulesSection() {
                     <span
                       className="mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-xs font-bold"
                       style={{
-                        background: "oklch(0.82 0.19 195 / 0.12)",
-                        color: "oklch(0.82 0.19 195)",
+                        background: "oklch(0.72 0.20 215 / 0.12)",
+                        color: "oklch(0.72 0.20 215)",
                       }}
                     >
                       {generalRules.indexOf(rule) + 1}
@@ -1031,7 +1031,7 @@ function RegisterSection() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.82 0.19 195 / 0.05) 0%, transparent 70%)",
+            "radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.72 0.20 215 / 0.05) 0%, transparent 70%)",
         }}
       />
 
@@ -1054,9 +1054,9 @@ function RegisterSection() {
                 data-ocid="register.card"
                 className="w-full max-w-sm mx-auto p-8 rounded-2xl border flex flex-col items-center gap-6"
                 style={{
-                  border: "1px solid oklch(0.78 0.18 80 / 0.4)",
-                  background: "oklch(0.12 0.015 250)",
-                  boxShadow: "0 0 40px 0 oklch(0.78 0.18 80 / 0.1)",
+                  border: "1px solid oklch(0.62 0.22 255 / 0.4)",
+                  background: "oklch(0.08 0.025 260)",
+                  boxShadow: "0 0 40px 0 oklch(0.62 0.22 255 / 0.1)",
                 }}
               >
                 {/* QR Code */}
@@ -1090,8 +1090,8 @@ function RegisterSection() {
               <div
                 className="p-5 rounded-xl flex items-start gap-4"
                 style={{
-                  background: "oklch(0.78 0.18 80 / 0.08)",
-                  border: "1px solid oklch(0.78 0.18 80 / 0.2)",
+                  background: "oklch(0.62 0.22 255 / 0.08)",
+                  border: "1px solid oklch(0.62 0.22 255 / 0.2)",
                 }}
               >
                 <span className="text-2xl flex-shrink-0">🍽️</span>
@@ -1110,8 +1110,8 @@ function RegisterSection() {
               <div
                 className="p-5 rounded-xl"
                 style={{
-                  background: "oklch(0.12 0.015 250)",
-                  border: "1px solid oklch(0.22 0.015 250)",
+                  background: "oklch(0.08 0.025 260)",
+                  border: "1px solid oklch(0.18 0.025 260)",
                 }}
               >
                 <h4 className="font-display font-[700] text-foreground mb-3 text-base">
@@ -1140,13 +1140,13 @@ function RegisterSection() {
               <div
                 className="p-5 rounded-xl"
                 style={{
-                  background: "oklch(0.82 0.19 195 / 0.06)",
-                  border: "1px solid oklch(0.82 0.19 195 / 0.2)",
+                  background: "oklch(0.72 0.20 215 / 0.06)",
+                  border: "1px solid oklch(0.72 0.20 215 / 0.2)",
                 }}
               >
                 <h4
                   className="font-display font-[700] mb-3 text-base"
-                  style={{ color: "oklch(0.82 0.19 195)" }}
+                  style={{ color: "oklch(0.72 0.20 215)" }}
                 >
                   Important Notes
                 </h4>
@@ -1218,7 +1218,7 @@ function ContactSection() {
               <div
                 data-ocid={`contact.card.${i + 1}`}
                 className="p-5 rounded-xl border bg-card flex flex-col gap-4"
-                style={{ borderColor: "oklch(0.78 0.18 80 / 0.3)" }}
+                style={{ borderColor: "oklch(0.62 0.22 255 / 0.3)" }}
               >
                 <div>
                   <Badge
@@ -1242,8 +1242,8 @@ function ContactSection() {
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
                     style={{
-                      background: "oklch(0.78 0.18 80 / 0.12)",
-                      border: "1px solid oklch(0.78 0.18 80 / 0.2)",
+                      background: "oklch(0.62 0.22 255 / 0.12)",
+                      border: "1px solid oklch(0.62 0.22 255 / 0.2)",
                     }}
                   >
                     <Phone className="h-3.5 w-3.5 text-primary" />
@@ -1276,14 +1276,14 @@ function ContactSection() {
             <div
               data-ocid="contact.panel"
               className="p-6 rounded-xl border bg-card h-full"
-              style={{ borderColor: "oklch(0.82 0.19 195 / 0.3)" }}
+              style={{ borderColor: "oklch(0.72 0.20 215 / 0.3)" }}
             >
               <Badge
                 variant="outline"
                 className="text-xs tracking-widest uppercase mb-3"
                 style={{
-                  borderColor: "oklch(0.82 0.19 195 / 0.4)",
-                  color: "oklch(0.82 0.19 195)",
+                  borderColor: "oklch(0.72 0.20 215 / 0.4)",
+                  color: "oklch(0.72 0.20 215)",
                 }}
               >
                 HOD / EEE
@@ -1302,7 +1302,7 @@ function ContactSection() {
             <div
               data-ocid="contact.card"
               className="p-6 rounded-xl border bg-card h-full"
-              style={{ borderColor: "oklch(0.78 0.18 80 / 0.3)" }}
+              style={{ borderColor: "oklch(0.62 0.22 255 / 0.3)" }}
             >
               <Badge
                 variant="outline"
@@ -1314,8 +1314,8 @@ function ContactSection() {
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{
-                    background: "oklch(0.78 0.18 80 / 0.12)",
-                    border: "1px solid oklch(0.78 0.18 80 / 0.25)",
+                    background: "oklch(0.62 0.22 255 / 0.12)",
+                    border: "1px solid oklch(0.62 0.22 255 / 0.25)",
                   }}
                 >
                   <GraduationCap className="h-5 w-5 text-primary" />
@@ -1337,14 +1337,14 @@ function ContactSection() {
             <div
               data-ocid="contact.card"
               className="p-6 rounded-xl border bg-card h-full"
-              style={{ borderColor: "oklch(0.82 0.19 195 / 0.3)" }}
+              style={{ borderColor: "oklch(0.72 0.20 215 / 0.3)" }}
             >
               <Badge
                 variant="outline"
                 className="text-xs tracking-widest uppercase mb-3"
                 style={{
-                  borderColor: "oklch(0.82 0.19 195 / 0.4)",
-                  color: "oklch(0.82 0.19 195)",
+                  borderColor: "oklch(0.72 0.20 215 / 0.4)",
+                  color: "oklch(0.72 0.20 215)",
                 }}
               >
                 Venue
@@ -1353,13 +1353,13 @@ function ContactSection() {
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{
-                    background: "oklch(0.82 0.19 195 / 0.12)",
-                    border: "1px solid oklch(0.82 0.19 195 / 0.25)",
+                    background: "oklch(0.72 0.20 215 / 0.12)",
+                    border: "1px solid oklch(0.72 0.20 215 / 0.25)",
                   }}
                 >
                   <MapPin
                     className="h-5 w-5"
-                    style={{ color: "oklch(0.82 0.19 195)" }}
+                    style={{ color: "oklch(0.72 0.20 215)" }}
                   />
                 </div>
                 <div>
@@ -1379,8 +1379,8 @@ function ContactSection() {
             <div
               className="p-6 rounded-xl h-full"
               style={{
-                background: "oklch(0.12 0.015 250)",
-                border: "1px solid oklch(0.22 0.015 250)",
+                background: "oklch(0.08 0.025 260)",
+                border: "1px solid oklch(0.18 0.025 260)",
               }}
             >
               <h4 className="font-display font-[700] text-foreground mb-4">
@@ -1416,8 +1416,8 @@ function ContactSection() {
               <div
                 className="p-5 rounded-xl flex items-center gap-3 group cursor-pointer transition-all h-full"
                 style={{
-                  background: "oklch(0.78 0.18 80 / 0.06)",
-                  border: "1px solid oklch(0.78 0.18 80 / 0.2)",
+                  background: "oklch(0.62 0.22 255 / 0.06)",
+                  border: "1px solid oklch(0.62 0.22 255 / 0.2)",
                 }}
               >
                 <Mail className="h-5 w-5 text-primary flex-shrink-0" />
@@ -1510,7 +1510,7 @@ function Footer() {
           className="h-px mb-5"
           style={{
             background:
-              "linear-gradient(90deg, transparent, oklch(0.78 0.18 80 / 0.3), transparent)",
+              "linear-gradient(90deg, transparent, oklch(0.62 0.22 255 / 0.3), transparent)",
           }}
         />
 
