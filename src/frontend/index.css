@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Fonts ──────────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("/assets/fonts/Outfit.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── Design Tokens — Electric Dark ─────────────────────────────────────── */
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* Dark electric background */
+    --background: 0.09 0.01 260;
+    --foreground: 0.95 0.015 80;
+
+    --card: 0.12 0.012 250;
+    --card-foreground: 0.93 0.015 80;
+
+    --popover: 0.12 0.012 250;
+    --popover-foreground: 0.93 0.015 80;
+
+    /* Primary = Electric Gold */
+    --primary: 0.78 0.18 80;
+    --primary-foreground: 0.08 0.01 260;
+
+    /* Secondary = Dim navy surface */
+    --secondary: 0.15 0.015 250;
+    --secondary-foreground: 0.90 0.015 80;
+
+    --muted: 0.15 0.015 250;
+    --muted-foreground: 0.58 0.012 250;
+
+    /* Accent = Electric Cyan */
+    --accent: 0.82 0.19 195;
+    --accent-foreground: 0.08 0.01 260;
+
+    --destructive: 0.58 0.245 27;
+    --destructive-foreground: 0.985 0 0;
+
+    --border: 0.22 0.015 250;
+    --input: 0.22 0.015 250;
+    --ring: 0.78 0.18 80;
+
+    --chart-1: 0.78 0.18 80;
+    --chart-2: 0.82 0.19 195;
+    --chart-3: 0.65 0.14 320;
+    --chart-4: 0.55 0.12 140;
+    --chart-5: 0.72 0.16 55;
+
+    --sidebar: 0.10 0.012 260;
+    --sidebar-foreground: 0.93 0.015 80;
+    --sidebar-primary: 0.78 0.18 80;
+    --sidebar-primary-foreground: 0.08 0.01 260;
+    --sidebar-accent: 0.15 0.015 250;
+    --sidebar-accent-foreground: 0.90 0.015 80;
+    --sidebar-border: 0.22 0.015 250;
+    --sidebar-ring: 0.78 0.18 80;
+
+    /* Custom tokens */
+    --nav-height: 5rem;
+    --gold: 0.78 0.18 80;
+    --cyan: 0.82 0.19 195;
+    --grain-opacity: 0.03;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Grain overlay */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: var(--grain-opacity);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+}
+
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Gold glow */
+  .glow-gold {
+    box-shadow: 0 0 0 0 oklch(var(--gold) / 0.3);
+    transition: box-shadow 0.3s ease;
+  }
+  .glow-gold:hover {
+    box-shadow: 0 0 28px 6px oklch(var(--gold) / 0.4);
+  }
+
+  /* Cyan glow */
+  .glow-cyan {
+    box-shadow: 0 0 0 0 oklch(var(--cyan) / 0.25);
+    transition: box-shadow 0.3s ease;
+  }
+  .glow-cyan:hover {
+    box-shadow: 0 0 24px 4px oklch(var(--cyan) / 0.35);
+  }
+
+  /* Card hover glow */
+  .card-glow-gold {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card-glow-gold:hover {
+    border-color: oklch(var(--gold) / 0.5);
+    box-shadow: 0 0 32px 0 oklch(var(--gold) / 0.12), inset 0 0 24px 0 oklch(var(--gold) / 0.04);
+  }
+
+  .card-glow-cyan {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card-glow-cyan:hover {
+    border-color: oklch(var(--cyan) / 0.5);
+    box-shadow: 0 0 32px 0 oklch(var(--cyan) / 0.12), inset 0 0 24px 0 oklch(var(--cyan) / 0.04);
+  }
+
+  /* Gradient text gold */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, oklch(var(--gold)) 0%, oklch(0.88 0.14 72) 50%, oklch(var(--gold)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gradient text cyan */
+  .text-gradient-cyan {
+    background: linear-gradient(135deg, oklch(var(--cyan)) 0%, oklch(0.88 0.15 185) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Timer display */
+  .timer-digit {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Animated border glow */
+  .border-glow-gold {
+    border-color: oklch(var(--gold) / 0.4);
+    box-shadow: 0 0 16px 0 oklch(var(--gold) / 0.15);
+  }
+
+  /* Scroll-reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  /* Scanline effect for hero */
+  .scanlines {
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      oklch(0 0 0 / 0.04) 2px,
+      oklch(0 0 0 / 0.04) 4px
+    );
+  }
+}
