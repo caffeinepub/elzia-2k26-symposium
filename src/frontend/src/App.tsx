@@ -410,71 +410,239 @@ function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-8 text-center">
-        {/* Logo */}
+        {/* Logo — half-emerging dragon with sparks */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="mb-8 flex justify-center"
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, ease: "easeOut" }}
+          className="mb-2 flex justify-center"
+          style={{ overflow: "visible" }}
         >
-          <div className="relative">
-            {/* Outer pulsing glow ring */}
-            <motion.div
-              animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-              transition={{
-                duration: 2.5,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-              }}
-              className="absolute inset-0 rounded-full"
+          <div
+            className="relative flex justify-center"
+            style={{ height: "160px", width: "320px" }}
+          >
+            {/* Dragon spark particles */}
+            {(
+              [
+                "p0",
+                "p1",
+                "p2",
+                "p3",
+                "p4",
+                "p5",
+                "p6",
+                "p7",
+                "p8",
+                "p9",
+                "p10",
+                "p11",
+                "p12",
+                "p13",
+                "p14",
+                "p15",
+              ] as const
+            ).map((pid, i) => {
+              const angle = (i / 16) * 360;
+              const radius = 90 + ((i * 7) % 60);
+              const x = Math.cos((angle * Math.PI) / 180) * radius;
+              const y = Math.sin((angle * Math.PI) / 180) * radius * 0.5;
+              const size = 2 + (i % 3) * 2;
+              const colors = [
+                "oklch(0.62 0.22 255)",
+                "oklch(0.72 0.20 215)",
+                "oklch(0.95 0.20 85)",
+                "oklch(1 0.15 100)",
+              ];
+              const color = colors[i % colors.length];
+              return (
+                <motion.div
+                  key={pid}
+                  className="absolute rounded-full pointer-events-none"
+                  style={{
+                    width: size,
+                    height: size,
+                    background: color,
+                    left: "50%",
+                    top: "50%",
+                    boxShadow: `0 0 6px 2px ${color}`,
+                  }}
+                  animate={{
+                    x: [0, x * 0.4, x, x * 1.3],
+                    y: [0, y * 0.4 - 20, y - 40, y - 80],
+                    opacity: [0, 1, 0.8, 0],
+                    scale: [0.5, 1.2, 0.8, 0],
+                  }}
+                  transition={{
+                    duration: 1.8 + (i % 5) * 0.3,
+                    repeat: Number.POSITIVE_INFINITY,
+                    delay: (i / 16) * 2.2,
+                    ease: "easeOut",
+                  }}
+                />
+              );
+            })}
+
+            {/* Extra bright spark streaks */}
+            {(["s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"] as const).map(
+              (sid, i) => {
+                const spread = [-120, -80, -50, -20, 20, 50, 80, 120][i];
+                return (
+                  <motion.div
+                    key={sid}
+                    className="absolute pointer-events-none"
+                    style={{
+                      width: "2px",
+                      height: "30px",
+                      background:
+                        i % 2 === 0
+                          ? "linear-gradient(to top, oklch(0.62 0.22 255), transparent)"
+                          : "linear-gradient(to top, oklch(0.95 0.20 85), transparent)",
+                      left: `calc(50% + ${spread}px)`,
+                      bottom: "55%",
+                      borderRadius: "2px",
+                      transformOrigin: "bottom center",
+                    }}
+                    animate={{
+                      y: [0, -60, -120],
+                      opacity: [0, 1, 0],
+                      scaleY: [0.5, 1, 0.3],
+                      rotate: [spread * 0.15, spread * 0.1, spread * 0.2],
+                    }}
+                    transition={{
+                      duration: 1.4 + (i % 3) * 0.2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      delay: i * 0.28,
+                      ease: "easeOut",
+                    }}
+                  />
+                );
+              },
+            )}
+
+            {/* Deep glow pool at the cut (bottom) */}
+            <div
+              className="absolute pointer-events-none"
               style={{
-                background: "oklch(0.62 0.22 255 / 0.35)",
-                filter: "blur(28px)",
-                transform: "scale(1.6)",
+                width: "340px",
+                height: "80px",
+                bottom: "-10px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background:
+                  "radial-gradient(ellipse 80% 100% at 50% 100%, oklch(0.62 0.22 255 / 0.55) 0%, oklch(0.72 0.20 215 / 0.2) 40%, transparent 70%)",
+                filter: "blur(8px)",
               }}
             />
-            {/* Secondary cyan glow */}
-            <motion.div
-              animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.5, 0.2] }}
-              transition={{
-                duration: 3,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-                delay: 0.8,
-              }}
-              className="absolute inset-0 rounded-full"
-              style={{
-                background: "oklch(0.72 0.20 215 / 0.25)",
-                filter: "blur(20px)",
-                transform: "scale(1.5)",
-              }}
-            />
-            {/* Shine sweep animation */}
+
+            {/* Outer rotating conic spark ring */}
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{
-                duration: 4,
+                duration: 3.5,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "linear",
               }}
-              className="absolute inset-0 rounded-full pointer-events-none"
+              className="absolute pointer-events-none"
               style={{
+                width: "280px",
+                height: "280px",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
                 background:
-                  "conic-gradient(from 0deg, transparent 0%, oklch(0.62 0.22 255 / 0.6) 20%, transparent 40%)",
-                transform: "scale(1.1)",
+                  "conic-gradient(from 0deg, transparent 0%, oklch(0.62 0.22 255 / 0.7) 18%, oklch(0.95 0.20 85 / 0.5) 22%, transparent 40%, oklch(0.72 0.20 215 / 0.5) 70%, oklch(0.95 0.20 85 / 0.3) 75%, transparent 90%)",
                 borderRadius: "50%",
+                filter: "blur(2px)",
               }}
             />
-            <img
-              src="/assets/uploads/WhatsApp-Image-2026-03-05-at-12.17.43-PM-1.jpeg"
-              alt="ELZIA 2K26 Logo"
-              className="relative w-48 h-48 sm:w-60 sm:h-60 lg:w-72 lg:h-72 rounded-full object-cover"
+
+            {/* Pulsing blue aura behind logo */}
+            <motion.div
+              animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0.85, 0.5] }}
+              transition={{
+                duration: 2.2,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+              className="absolute pointer-events-none rounded-full"
               style={{
-                borderWidth: "3px",
-                borderStyle: "solid",
-                borderColor: "oklch(0.62 0.22 255 / 0.8)",
-                boxShadow:
-                  "0 0 60px 16px oklch(0.62 0.22 255 / 0.4), 0 0 120px 40px oklch(0.62 0.22 255 / 0.15), inset 0 0 30px oklch(0.62 0.22 255 / 0.1)",
+                width: "240px",
+                height: "240px",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "oklch(0.62 0.22 255 / 0.35)",
+                filter: "blur(30px)",
+              }}
+            />
+
+            {/* The logo itself — clipped to show only top half emerging */}
+            <div
+              className="absolute"
+              style={{
+                width: "220px",
+                height: "220px",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                overflow: "hidden",
+                clipPath: "inset(0 0 45% 0)",
+                zIndex: 10,
+              }}
+            >
+              {/* Shining border ring */}
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{
+                  duration: 5,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
+                }}
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  background:
+                    "conic-gradient(from 0deg, transparent 0%, oklch(0.95 0.20 85) 15%, oklch(0.62 0.22 255) 30%, transparent 50%, oklch(0.72 0.20 215) 80%, transparent 100%)",
+                  padding: "3px",
+                  borderRadius: "50%",
+                  zIndex: 12,
+                }}
+              />
+              <img
+                src="/assets/uploads/WhatsApp-Image-2026-03-05-at-12.17.43-PM-1.jpeg"
+                alt="ELZIA 2K26 Logo"
+                className="w-full h-full rounded-full object-cover relative"
+                style={{
+                  borderWidth: "3px",
+                  borderStyle: "solid",
+                  borderColor: "oklch(0.62 0.22 255 / 0.9)",
+                  boxShadow:
+                    "0 0 40px 12px oklch(0.62 0.22 255 / 0.6), 0 0 80px 30px oklch(0.62 0.22 255 / 0.2), inset 0 0 20px oklch(0.72 0.20 215 / 0.2)",
+                  zIndex: 11,
+                }}
+              />
+            </div>
+
+            {/* Bottom cut glowing edge line */}
+            <motion.div
+              animate={{ opacity: [0.6, 1, 0.6], scaleX: [0.9, 1.05, 0.9] }}
+              transition={{
+                duration: 1.8,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+              className="absolute pointer-events-none"
+              style={{
+                width: "200px",
+                height: "3px",
+                bottom: "57px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background:
+                  "linear-gradient(90deg, transparent, oklch(0.62 0.22 255) 20%, oklch(0.95 0.20 85) 50%, oklch(0.62 0.22 255) 80%, transparent)",
+                boxShadow: "0 0 12px 4px oklch(0.62 0.22 255 / 0.8)",
+                borderRadius: "2px",
+                zIndex: 15,
               }}
             />
           </div>
