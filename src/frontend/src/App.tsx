@@ -125,30 +125,35 @@ const PRIZES = [
     title: "Participation Certificates",
     description:
       "All participants receive certificates of participation for every event and workshop attended.",
+    borderColor: "#FACC15",
   },
   {
     icon: "🥇",
     title: "Certificates of Merit",
     description:
       "Winners receive certificates of merit mentioning their specific achievement.",
+    borderColor: "#EC4899",
   },
   {
     icon: "💰",
     title: "Cash Prizes",
     description:
       "Cash prizes awarded to winners in selected competitive events.",
+    borderColor: "#F97316",
   },
   {
     icon: "🎁",
     title: "Take-Away Kits",
     description:
       "Every participant walks away with an exclusive take-away kit.",
+    borderColor: "#FACC15",
   },
   {
     icon: "✨",
     title: "Exciting Prizes",
     description:
       "Exciting prizes for the most enthusiastic and outstanding participants.",
+    borderColor: "#EC4899",
   },
 ];
 
@@ -233,15 +238,21 @@ function FadeUp({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-4">
-      <span className="w-6 h-px bg-primary inline-block" />
+    <span
+      className="inline-flex items-center gap-2 text-xs font-[900] tracking-[0.2em] uppercase mb-4 px-4 py-1.5 rounded-full"
+      style={{
+        background: "#FACC15",
+        color: "#1e003e",
+        border: "2px solid #000",
+        boxShadow: "2px 2px 0 #000",
+      }}
+    >
       {children}
-      <span className="w-6 h-px bg-primary inline-block" />
     </span>
   );
 }
 
-/* ─── NEW: Scroll Progress Bar ────────────────────────────────────────────── */
+/* ─── Scroll Progress Bar ─────────────────────────────────────────────────── */
 function ScrollProgressBar() {
   const [progress, setProgress] = useState(0);
 
@@ -266,20 +277,69 @@ function ScrollProgressBar() {
   );
 }
 
-/* ─── NEW: Canvas Particle Field ──────────────────────────────────────────── */
-interface Particle {
+/* ─── CartoonCanvas — lightning, speech bubbles, stars, gears, circuits ────── */
+interface CartoonStar {
   x: number;
   y: number;
+  size: number;
+  color: string;
   vx: number;
   vy: number;
-  r: number;
-  hue: number;
+  angle: number;
+  spin: number;
 }
 
-function ParticleCanvas() {
+interface SpeechBubble {
+  x: number;
+  y: number;
+  text: string;
+  alpha: number;
+  life: number;
+  maxLife: number;
+  scale: number;
+}
+
+interface CartoonBolt {
+  x: number;
+  y: number;
+  alpha: number;
+  life: number;
+  maxLife: number;
+  points: { x: number; y: number }[];
+  color: string;
+}
+
+interface CartoonGear {
+  x: number;
+  y: number;
+  r: number;
+  teeth: number;
+  angle: number;
+  speed: number;
+  color: string;
+}
+
+interface CircuitLine {
+  points: { x: number; y: number }[];
+  color: string;
+  pulseOffset: number;
+  pulseSpeed: number;
+  totalLength: number;
+}
+
+function CartoonCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
-  const particlesRef = useRef<Particle[]>([]);
+  const stateRef = useRef<{
+    stars: CartoonStar[];
+    bubbles: SpeechBubble[];
+    bolts: CartoonBolt[];
+    gears: CartoonGear[];
+    circuits: CircuitLine[];
+    t: number;
+    nextBubble: number;
+    nextBolt: number;
+  } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -287,68 +347,455 @@ function ParticleCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const starColors = ["#FACC15", "#EC4899", "#F97316", "#a855f7", "#22d3ee"];
+    const bubbleTexts = [
+      "ZAP!",
+      "POW!",
+      "BOOM!",
+      "WOW!",
+      "ZAPP!",
+      "BAM!",
+      "KAPOW!",
+    ];
+    const boltColors = ["#FACC15", "#F97316", "#EC4899"];
+    const gearColors = [
+      "rgba(250,204,21,0.25)",
+      "rgba(236,72,153,0.25)",
+      "rgba(249,115,22,0.25)",
+    ];
+    const circuitColors = [
+      "rgba(250,204,21,0.3)",
+      "rgba(236,72,153,0.3)",
+      "rgba(249,115,22,0.3)",
+      "rgba(168,85,247,0.3)",
+    ];
+
+    function makeBolt(W: number, H: number): CartoonBolt {
+      const x = Math.random() * W;
+      const y = Math.random() * H * 0.8;
+      const len = 40 + Math.random() * 60;
+      const pts: { x: number; y: number }[] = [{ x: 0, y: 0 }];
+      let cx = 0;
+      let cy = 0;
+      const steps = 4 + Math.floor(Math.random() * 3);
+      for (let i = 1; i <= steps; i++) {
+        cx += (Math.random() - 0.3) * 20;
+        cy += (len / steps) * (0.7 + Math.random() * 0.6);
+        pts.push({ x: cx, y: cy });
+      }
+      return {
+        x,
+        y,
+        alpha: 0.7 + Math.random() * 0.3,
+        life: 0,
+        maxLife: 60 + Math.random() * 40,
+        points: pts,
+        color: boltColors[Math.floor(Math.random() * boltColors.length)],
+      };
+    }
+
+    function makeBubble(W: number, H: number): SpeechBubble {
+      const maxLife = 90 + Math.random() * 60;
+      return {
+        x: 60 + Math.random() * (W - 120),
+        y: 60 + Math.random() * (H - 120),
+        text: bubbleTexts[Math.floor(Math.random() * bubbleTexts.length)],
+        alpha: 0,
+        life: 0,
+        maxLife,
+        scale: 0,
+      };
+    }
+
     const resize = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
+      initScene();
     };
+
+    function initScene() {
+      if (!canvas) return;
+      const W = canvas.width;
+      const H = canvas.height;
+
+      // Stars
+      const stars: CartoonStar[] = Array.from({ length: 18 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        size: 8 + Math.random() * 14,
+        color: starColors[Math.floor(Math.random() * starColors.length)],
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.04,
+      }));
+
+      // Gears
+      const gears: CartoonGear[] = [
+        {
+          x: W * 0.07,
+          y: H * 0.15,
+          r: 35,
+          teeth: 8,
+          angle: 0,
+          speed: 0.006,
+          color: gearColors[0],
+        },
+        {
+          x: W * 0.93,
+          y: H * 0.25,
+          r: 28,
+          teeth: 7,
+          angle: 0,
+          speed: -0.008,
+          color: gearColors[1],
+        },
+        {
+          x: W * 0.05,
+          y: H * 0.75,
+          r: 22,
+          teeth: 6,
+          angle: 0,
+          speed: 0.01,
+          color: gearColors[2],
+        },
+        {
+          x: W * 0.92,
+          y: H * 0.7,
+          r: 32,
+          teeth: 8,
+          angle: 0,
+          speed: -0.007,
+          color: gearColors[0],
+        },
+        {
+          x: W * 0.5,
+          y: H * 0.95,
+          r: 20,
+          teeth: 6,
+          angle: 0,
+          speed: 0.009,
+          color: gearColors[1],
+        },
+      ];
+
+      // Circuit lines
+      const circuits: CircuitLine[] = [];
+      const numCircuits = 12;
+      for (let i = 0; i < numCircuits; i++) {
+        const startX = Math.random() * W;
+        const startY = Math.random() * H;
+        const pts: { x: number; y: number }[] = [{ x: startX, y: startY }];
+        let cx2 = startX;
+        let cy2 = startY;
+        const segs = 3 + Math.floor(Math.random() * 3);
+        for (let s = 0; s < segs; s++) {
+          if (Math.random() > 0.5) {
+            cx2 += (Math.random() > 0.5 ? 1 : -1) * (40 + Math.random() * 80);
+          } else {
+            cy2 += (Math.random() > 0.5 ? 1 : -1) * (40 + Math.random() * 80);
+          }
+          pts.push({ x: cx2, y: cy2 });
+        }
+        let totalLength = 0;
+        for (let j = 1; j < pts.length; j++) {
+          const dx = pts[j].x - pts[j - 1].x;
+          const dy = pts[j].y - pts[j - 1].y;
+          totalLength += Math.sqrt(dx * dx + dy * dy);
+        }
+        circuits.push({
+          points: pts,
+          color:
+            circuitColors[Math.floor(Math.random() * circuitColors.length)],
+          pulseOffset: Math.random() * totalLength,
+          pulseSpeed: 50 + Math.random() * 80,
+          totalLength,
+        });
+      }
+
+      stateRef.current = {
+        stars,
+        bubbles: [],
+        bolts: [],
+        gears,
+        circuits,
+        t: 0,
+        nextBubble: 120,
+        nextBolt: 40,
+      };
+    }
+
     resize();
     window.addEventListener("resize", resize, { passive: true });
 
-    // Init particles
-    const COUNT = 90;
-    particlesRef.current = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-      r: 1.2 + Math.random() * 1.8,
-      hue: 210 + Math.random() * 50, // blue → cyan range
-    }));
+    // Draw 5-pointed star
+    function drawStar(
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      r: number,
+      color: string,
+      angle: number,
+    ) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const outerAngle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const innerAngle = outerAngle + (2 * Math.PI) / 10;
+        if (i === 0)
+          ctx.moveTo(Math.cos(outerAngle) * r, Math.sin(outerAngle) * r);
+        else ctx.lineTo(Math.cos(outerAngle) * r, Math.sin(outerAngle) * r);
+        ctx.lineTo(
+          Math.cos(innerAngle) * (r * 0.4),
+          Math.sin(innerAngle) * (r * 0.4),
+        );
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
 
-    const draw = () => {
-      const { width, height } = canvas;
-      ctx.clearRect(0, 0, width, height);
+    // Draw cartoon gear
+    function drawGear(ctx: CanvasRenderingContext2D, gear: CartoonGear) {
+      const { x, y, r, teeth, angle, color } = gear;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      for (let i = 0; i < teeth; i++) {
+        const a1 = (i / teeth) * Math.PI * 2;
+        const a2 = ((i + 0.4) / teeth) * Math.PI * 2;
+        const a3 = ((i + 0.6) / teeth) * Math.PI * 2;
+        const a4 = ((i + 1) / teeth) * Math.PI * 2;
+        ctx.lineTo(Math.cos(a1) * r, Math.sin(a1) * r);
+        ctx.lineTo(Math.cos(a2) * (r + r * 0.3), Math.sin(a2) * (r + r * 0.3));
+        ctx.lineTo(Math.cos(a3) * (r + r * 0.3), Math.sin(a3) * (r + r * 0.3));
+        ctx.lineTo(Math.cos(a4) * r, Math.sin(a4) * r);
+      }
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "rgba(0,0,0,0.35)";
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      // Center hole
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.2)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.3)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+    }
 
-      const particles = particlesRef.current;
+    // Draw cartoon lightning bolt
+    function drawBolt(ctx: CanvasRenderingContext2D, bolt: CartoonBolt) {
+      const t = bolt.life / bolt.maxLife;
+      const alpha = bolt.alpha * (t < 0.2 ? t / 0.2 : 1 - (t - 0.2) / 0.8);
+      ctx.save();
+      ctx.translate(bolt.x, bolt.y);
+      // Outer thick black stroke
+      ctx.beginPath();
+      ctx.moveTo(bolt.points[0].x, bolt.points[0].y);
+      for (const p of bolt.points.slice(1)) ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = `rgba(0,0,0,${alpha * 0.9})`;
+      ctx.lineWidth = 8;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+      // Inner colored stroke
+      ctx.beginPath();
+      ctx.moveTo(bolt.points[0].x, bolt.points[0].y);
+      for (const p of bolt.points.slice(1)) ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = bolt.color
+        .replace(")", `,${alpha})`)
+        .replace("rgb", "rgba");
+      // Handle hex color
+      ctx.strokeStyle = bolt.color;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = 5;
+      ctx.stroke();
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
 
-      for (const p of particles) {
-        // Move
-        p.x += p.vx;
-        p.y += p.vy;
-        // Bounce
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
+    // Draw speech bubble
+    function drawBubble(ctx: CanvasRenderingContext2D, bubble: SpeechBubble) {
+      const t = bubble.life / bubble.maxLife;
+      const alpha = t < 0.15 ? t / 0.15 : t > 0.75 ? (1 - t) / 0.25 : 1;
+      const scale =
+        t < 0.15
+          ? (t / 0.15) * 1.2
+          : t < 0.2
+            ? 1.2 - ((t - 0.15) / 0.05) * 0.2
+            : 1;
+
+      ctx.save();
+      ctx.translate(bubble.x, bubble.y);
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = alpha * 0.75;
+
+      // Bubble body
+      const w = 70;
+      const h = 36;
+      ctx.beginPath();
+      ctx.roundRect(-w / 2, -h / 2, w, h, 12);
+      ctx.fillStyle = "#FACC15";
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 3;
+      ctx.fill();
+      ctx.stroke();
+
+      // Tail
+      ctx.beginPath();
+      ctx.moveTo(-8, h / 2);
+      ctx.lineTo(0, h / 2 + 14);
+      ctx.lineTo(10, h / 2);
+      ctx.fillStyle = "#FACC15";
+      ctx.fill();
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Text
+      ctx.globalAlpha = 1;
+      ctx.font = "bold 14px 'Bricolage Grotesque', sans-serif";
+      ctx.fillStyle = "#1e003e";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(bubble.text, 0, 0);
+
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    // Point along polyline at distance d
+    function pointAtDist(
+      points: { x: number; y: number }[],
+      dist: number,
+    ): { x: number; y: number } | null {
+      let remaining = dist;
+      for (let i = 1; i < points.length; i++) {
+        const dx = points[i].x - points[i - 1].x;
+        const dy = points[i].y - points[i - 1].y;
+        const segLen = Math.sqrt(dx * dx + dy * dy);
+        if (remaining <= segLen) {
+          const t2 = remaining / segLen;
+          return {
+            x: points[i - 1].x + dx * t2,
+            y: points[i - 1].y + dy * t2,
+          };
+        }
+        remaining -= segLen;
+      }
+      return null;
+    }
+
+    let lastTime = 0;
+    let _frame = 0;
+
+    const draw = (timestamp: number) => {
+      if (!canvas || !stateRef.current) return;
+      const dt = Math.min(timestamp - lastTime, 50);
+      lastTime = timestamp;
+      _frame++;
+
+      const state = stateRef.current;
+      state.t += dt * 0.001;
+      const W = canvas.width;
+      const H = canvas.height;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // ── Gears ─────────────────────────────────────────────────────────────
+      for (const gear of state.gears) {
+        gear.angle += gear.speed;
+        drawGear(ctx, gear);
       }
 
-      // Draw connections
-      const LINK_DIST = 120;
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < LINK_DIST) {
-            const alpha = (1 - dist / LINK_DIST) * 0.35;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `hsla(230, 80%, 65%, ${alpha})`;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          }
+      // ── Circuit lines ──────────────────────────────────────────────────────
+      for (const circuit of state.circuits) {
+        ctx.beginPath();
+        ctx.moveTo(circuit.points[0].x, circuit.points[0].y);
+        for (let i = 1; i < circuit.points.length; i++) {
+          ctx.lineTo(circuit.points[i].x, circuit.points[i].y);
+        }
+        ctx.strokeStyle = circuit.color;
+        ctx.lineWidth = 2.5;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.setLineDash([]);
+        ctx.stroke();
+
+        // Junction dots
+        for (const pt of circuit.points) {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = circuit.color;
+          ctx.strokeStyle = "#000";
+          ctx.lineWidth = 1.5;
+          ctx.fill();
+          ctx.stroke();
+        }
+
+        // Traveling pulse
+        circuit.pulseOffset =
+          (circuit.pulseOffset + circuit.pulseSpeed * 0.016) %
+          circuit.totalLength;
+        const pPos = pointAtDist(circuit.points, circuit.pulseOffset);
+        if (pPos) {
+          ctx.beginPath();
+          ctx.arc(pPos.x, pPos.y, 5, 0, Math.PI * 2);
+          ctx.fillStyle = "#FACC15";
+          ctx.strokeStyle = "#000";
+          ctx.lineWidth = 2;
+          ctx.fill();
+          ctx.stroke();
         }
       }
 
-      // Draw dots
-      for (const p of particles) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 85%, 70%, 0.75)`;
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = `hsla(${p.hue}, 90%, 75%, 0.8)`;
-        ctx.fill();
+      // ── Stars ─────────────────────────────────────────────────────────────
+      for (const star of state.stars) {
+        star.x += star.vx;
+        star.y += star.vy;
+        star.angle += star.spin;
+        if (star.x < -20) star.x = W + 20;
+        if (star.x > W + 20) star.x = -20;
+        if (star.y < -20) star.y = H + 20;
+        if (star.y > H + 20) star.y = -20;
+        drawStar(ctx, star.x, star.y, star.size, star.color, star.angle);
       }
-      ctx.shadowBlur = 0;
+
+      // ── Bolts ─────────────────────────────────────────────────────────────
+      state.nextBolt -= 1;
+      if (state.nextBolt <= 0) {
+        state.bolts.push(makeBolt(W, H));
+        state.nextBolt = 50 + Math.random() * 80;
+      }
+      state.bolts = state.bolts.filter((b) => b.life < b.maxLife);
+      for (const bolt of state.bolts) {
+        drawBolt(ctx, bolt);
+        bolt.life += 1;
+      }
+
+      // ── Speech Bubbles ────────────────────────────────────────────────────
+      state.nextBubble -= 1;
+      if (state.nextBubble <= 0) {
+        state.bubbles.push(makeBubble(W, H));
+        state.nextBubble = 200 + Math.random() * 200;
+      }
+      state.bubbles = state.bubbles.filter((b) => b.life < b.maxLife);
+      for (const bubble of state.bubbles) {
+        drawBubble(ctx, bubble);
+        bubble.life += 1;
+      }
 
       rafRef.current = requestAnimationFrame(draw);
     };
@@ -364,171 +811,12 @@ function ParticleCanvas() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.4 }}
     />
   );
 }
 
-/* ─── NEW: Circuit Board SVG Lines ────────────────────────────────────────── */
-const CIRCUITS = [
-  { id: "c1", d: "M 80 100 H 200 V 200 H 350 V 120 H 480", delay: 0, dur: 3 },
-  {
-    id: "c2",
-    d: "M 0 280 H 120 V 180 H 260 V 300 H 400",
-    delay: 0.8,
-    dur: 3.5,
-  },
-  { id: "c3", d: "M 600 50 H 720 V 150 H 860 V 80 H 1000", delay: 1.6, dur: 4 },
-  {
-    id: "c4",
-    d: "M 700 350 H 820 V 250 H 980 V 320 H 1100",
-    delay: 0.4,
-    dur: 3.2,
-  },
-  {
-    id: "c5",
-    d: "M 200 450 H 380 V 380 H 520 V 460 H 650",
-    delay: 1.2,
-    dur: 3.8,
-  },
-  {
-    id: "c6",
-    d: "M 900 420 H 1020 V 340 H 1150 V 410 H 1280",
-    delay: 2,
-    dur: 4.2,
-  },
-  {
-    id: "c7",
-    d: "M 50 500 H 180 V 420 H 320 V 490 H 460",
-    delay: 0.6,
-    dur: 3.6,
-  },
-  {
-    id: "c8",
-    d: "M 780 180 H 920 V 280 H 1060 V 200 H 1180",
-    delay: 1.8,
-    dur: 3.4,
-  },
-];
-
-function CircuitLines() {
-  return (
-    <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.18 }}
-      aria-hidden="true"
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <filter id="circuit-glow">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      {CIRCUITS.map((c) => (
-        <path
-          key={c.id}
-          d={c.d}
-          fill="none"
-          stroke="oklch(0.72 0.20 215)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter="url(#circuit-glow)"
-          style={{
-            strokeDasharray: 300,
-            strokeDashoffset: 300,
-            animation: `circuitFlow ${c.dur}s ease-in-out ${c.delay}s infinite`,
-          }}
-        />
-      ))}
-    </svg>
-  );
-}
-
-/* ─── NEW: Sound Wave SVG ─────────────────────────────────────────────────── */
-function SoundWave({ side }: { side: "left" | "right" }) {
-  const waveRef = useRef<SVGPathElement>(null);
-  const raf = useRef<number>(0);
-  const t = useRef(0);
-
-  useEffect(() => {
-    const el = waveRef.current;
-    if (!el) return;
-
-    const W = 160;
-    const H = 80;
-    const points = 8;
-
-    const animate = () => {
-      t.current += 0.03;
-      let d = `M 0 ${H / 2}`;
-      for (let i = 0; i <= points; i++) {
-        const x = (i / points) * W;
-        const amp = 12 + Math.sin(t.current * 0.7 + i * 0.8) * 6;
-        const y = H / 2 + Math.sin(t.current + i * 1.2) * amp;
-        d += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
-      }
-      el.setAttribute("d", d);
-      raf.current = requestAnimationFrame(animate);
-    };
-    raf.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf.current);
-  }, []);
-
-  return (
-    <div
-      className="absolute top-1/2 -translate-y-1/2 pointer-events-none"
-      style={{
-        [side === "left" ? "left" : "right"]: "clamp(10px, 5vw, 80px)",
-        opacity: 0.45,
-        filter: "blur(0.5px)",
-      }}
-      aria-hidden="true"
-    >
-      <svg
-        width="160"
-        height="80"
-        style={{ overflow: "visible" }}
-        role="presentation"
-        aria-hidden="true"
-      >
-        <defs>
-          <filter id={`wave-glow-${side}`}>
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        <path
-          ref={waveRef}
-          fill="none"
-          stroke="oklch(0.72 0.20 215)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          filter={`url(#wave-glow-${side})`}
-          style={{ boxShadow: "0 0 8px oklch(0.72 0.20 215)" }}
-        />
-        {/* Secondary faint wave */}
-        <path
-          d="M 0 40 L 160 40"
-          fill="none"
-          stroke="oklch(0.62 0.22 255 / 0.3)"
-          strokeWidth="1"
-          strokeDasharray="4 6"
-          strokeLinecap="round"
-        />
-      </svg>
-    </div>
-  );
-}
-
-/* ─── NEW: Glitch Title ───────────────────────────────────────────────────── */
+/* ─── Glitch Title ────────────────────────────────────────────────────────── */
 function GlitchTitle({ children }: { children: React.ReactNode }) {
   const [isGlitching, setIsGlitching] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -560,18 +848,18 @@ function GlitchTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ─── NEW: Digit Flip (Framer Motion AnimatePresence) ─────────────────────── */
+/* ─── Digit Flip ──────────────────────────────────────────────────────────── */
 function FlipDigit({ value, label }: { value: number; label: string }) {
   const paddedVal = pad(value);
 
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 rounded-lg flex items-center justify-center overflow-hidden"
+        className="relative w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 rounded-xl flex items-center justify-center overflow-hidden"
         style={{
-          background: "oklch(0.08 0.025 260)",
-          border: "1px solid oklch(0.62 0.22 255 / 0.3)",
-          boxShadow: "0 0 20px 0 oklch(0.62 0.22 255 / 0.1)",
+          background: "#FACC15",
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0 #000",
         }}
       >
         <AnimatePresence mode="popLayout" initial={false}>
@@ -581,21 +869,25 @@ function FlipDigit({ value, label }: { value: number; label: string }) {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 30, opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
-            className="timer-digit font-display text-2xl sm:text-3xl lg:text-4xl font-[800] text-gradient-gold absolute"
+            className="timer-digit font-display text-2xl sm:text-3xl lg:text-4xl font-[900] absolute"
+            style={{ color: "#1e003e" }}
             aria-live="polite"
           >
             {paddedVal}
           </motion.span>
         </AnimatePresence>
       </div>
-      <span className="text-xs text-muted-foreground mt-2 tracking-widest uppercase">
+      <span
+        className="text-xs font-[700] mt-2 tracking-widest uppercase"
+        style={{ color: "#FACC15" }}
+      >
         {label}
       </span>
     </div>
   );
 }
 
-/* ─── NEW: Section Header with Char Reveal ────────────────────────────────── */
+/* ─── Section Header with Char Reveal ────────────────────────────────────── */
 function RevealHeading({
   children,
   className,
@@ -606,11 +898,9 @@ function RevealHeading({
   const ref = useRef<HTMLHeadingElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
-  // Flatten children to string for char splitting; fallback to rendering as-is
   const text = typeof children === "string" ? children : null;
 
   if (!text) {
-    // Non-string children: just fade in the whole heading
     return (
       <motion.h2
         ref={ref}
@@ -624,7 +914,6 @@ function RevealHeading({
     );
   }
 
-  // Build stable char entries outside map to avoid index-key lint
   const chars = Array.from(text, (char, pos) => ({
     key: `c${pos}`,
     char,
@@ -652,13 +941,14 @@ function RevealHeading({
   );
 }
 
-/* ─── NEW: Ripple Button ──────────────────────────────────────────────────── */
+/* ─── Ripple Button ───────────────────────────────────────────────────────── */
 function RippleButton({
   children,
   className,
   onClick,
   size,
   variant,
+  style,
   "data-ocid": dataOcid,
 }: {
   children: React.ReactNode;
@@ -666,6 +956,7 @@ function RippleButton({
   onClick?: () => void;
   size?: "lg" | "sm" | "default";
   variant?: "outline" | "default";
+  style?: React.CSSProperties;
   "data-ocid"?: string;
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -680,9 +971,9 @@ function RippleButton({
       const rect = btn.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const size = Math.max(rect.width, rect.height) * 2;
+      const sz = Math.max(rect.width, rect.height) * 2;
       const id = Date.now();
-      setRipples((prev) => [...prev, { id, x, y, size }]);
+      setRipples((prev) => [...prev, { id, x, y, size: sz }]);
       setTimeout(() => {
         setRipples((prev) => prev.filter((r) => r.id !== id));
       }, 700);
@@ -697,7 +988,8 @@ function RippleButton({
       size={size}
       variant={variant}
       data-ocid={dataOcid}
-      className={cn("btn-ripple", className)}
+      className={cn("btn-ripple cartoon-btn", className)}
+      style={style}
       onClick={handleClick}
     >
       {children}
@@ -717,7 +1009,7 @@ function RippleButton({
   );
 }
 
-/* ─── NEW: Energy Card (border sweep on hover) ────────────────────────────── */
+/* ─── Energy Event Card ───────────────────────────────────────────────────── */
 function EnergyEventCard({
   icon: Icon,
   title,
@@ -736,64 +1028,63 @@ function EnergyEventCard({
   index: number;
 }) {
   const isGold = color === "gold";
+  const accentColor = isGold ? "#FACC15" : "#EC4899";
+  const iconBg = isGold ? "rgba(250,204,21,0.15)" : "rgba(236,72,153,0.15)";
+
   return (
     <motion.article
       data-ocid={`events.item.${index}`}
-      whileHover={{ y: -6, scale: 1.015 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
+      whileHover={{ y: -6, scale: 1.05, rotate: 0.8 }}
+      transition={{ duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }}
       className={cn(
-        "energy-card relative group p-6 lg:p-8 rounded-xl border bg-card overflow-hidden",
-        isGold
-          ? "card-glow-gold border-border"
-          : "card-glow-cyan border-border",
+        "energy-card cartoon-card relative group p-6 lg:p-8 rounded-xl bg-card overflow-hidden",
+        isGold ? "card-glow-gold" : "card-glow-cyan",
       )}
+      style={{
+        borderColor: accentColor,
+        borderWidth: "3px",
+        borderStyle: "solid",
+        boxShadow: "4px 4px 0 #000",
+      }}
     >
-      {/* Inner content sits above energy border pseudo-element */}
       <div className="relative z-10">
         {/* Ambient overlay */}
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl"
           style={{
             background: isGold
-              ? "radial-gradient(ellipse at 30% 0%, oklch(0.62 0.22 255 / 0.07) 0%, transparent 60%)"
-              : "radial-gradient(ellipse at 30% 0%, oklch(0.72 0.20 215 / 0.07) 0%, transparent 60%)",
+              ? "radial-gradient(ellipse at 30% 0%, rgba(250,204,21,0.1) 0%, transparent 60%)"
+              : "radial-gradient(ellipse at 30% 0%, rgba(236,72,153,0.1) 0%, transparent 60%)",
           }}
         />
 
         {/* Icon */}
         <div
-          className="mb-5 inline-flex items-center justify-center w-12 h-12 rounded-lg"
+          className="mb-5 inline-flex items-center justify-center w-12 h-12 rounded-xl"
           style={{
-            background: isGold
-              ? "oklch(0.62 0.22 255 / 0.12)"
-              : "oklch(0.72 0.20 215 / 0.12)",
-            border: isGold
-              ? "1px solid oklch(0.62 0.22 255 / 0.25)"
-              : "1px solid oklch(0.72 0.20 215 / 0.25)",
+            background: iconBg,
+            border: `2px solid ${accentColor}`,
+            boxShadow: "2px 2px 0 #000",
           }}
         >
-          <Icon
-            className="h-5 w-5"
-            style={{
-              color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
-            }}
-          />
+          <Icon className="h-5 w-5" style={{ color: accentColor }} />
         </div>
 
         {/* Tagline */}
         <p
-          className="text-xs font-semibold tracking-[0.18em] uppercase mb-1"
-          style={{
-            color: isGold
-              ? "oklch(0.62 0.22 255 / 0.8)"
-              : "oklch(0.72 0.20 215 / 0.8)",
-          }}
+          className="text-xs font-[700] tracking-[0.18em] uppercase mb-1"
+          style={{ color: accentColor }}
         >
           {tagline}
         </p>
 
         {/* Title */}
-        <h3 className="font-display text-xl font-[700] tracking-tight mb-3 text-foreground">
+        <h3
+          className="font-display text-xl font-[800] tracking-tight mb-3 text-foreground"
+          style={{
+            textShadow: "1px 1px 0 rgba(0,0,0,0.5)",
+          }}
+        >
           {title}
         </h3>
 
@@ -803,15 +1094,12 @@ function EnergyEventCard({
 
         {/* Detail badge */}
         <span
-          className="inline-block text-xs font-medium px-3 py-1 rounded-full"
+          className="inline-block text-xs font-[700] px-3 py-1 rounded-full"
           style={{
-            background: isGold
-              ? "oklch(0.62 0.22 255 / 0.1)"
-              : "oklch(0.72 0.20 215 / 0.1)",
-            color: isGold ? "oklch(0.62 0.22 255)" : "oklch(0.72 0.20 215)",
-            border: isGold
-              ? "1px solid oklch(0.62 0.22 255 / 0.2)"
-              : "1px solid oklch(0.72 0.20 215 / 0.2)",
+            background: accentColor,
+            color: "#1e003e",
+            border: "2px solid #000",
+            boxShadow: "1px 1px 0 #000",
           }}
         >
           {detail}
@@ -836,12 +1124,12 @@ function Navbar() {
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-500",
         scrolled
-          ? "bg-background/90 backdrop-blur-md border-b border-border"
+          ? "bg-background/95 backdrop-blur-md border-b-2 border-primary/50"
           : "bg-transparent",
       )}
       style={{
         height: "var(--nav-height)",
-        paddingTop: "3px" /* space for progress bar */,
+        paddingTop: "3px",
       }}
     >
       <nav className="max-w-7xl mx-auto h-full flex items-center justify-between px-6 lg:px-8">
@@ -853,11 +1141,21 @@ function Navbar() {
           onClick={() => scrollTo("#home")}
         >
           <img
-            src="/assets/uploads/WhatsApp-Image-2026-03-05-at-12.17.43-PM-1.jpeg"
+            src="/assets/generated/elzia-cartoon-logo-transparent.dim_400x400.png"
             alt="ELZIA 2K26 Logo"
-            className="h-10 w-10 rounded-full object-cover border border-primary/30 group-hover:border-primary/70 transition-colors"
+            className="h-10 w-10 rounded-full object-cover"
+            style={{
+              border: "2px solid #FACC15",
+              boxShadow: "2px 2px 0 #000",
+            }}
           />
-          <span className="font-display text-xl font-[800] tracking-tight text-gradient-gold">
+          <span
+            className="font-display text-xl font-[900] tracking-tight"
+            style={{
+              color: "#FACC15",
+              textShadow: "2px 2px 0 #000",
+            }}
+          >
             ELZIA 2K26
           </span>
         </button>
@@ -869,7 +1167,7 @@ function Navbar() {
               <a
                 href={link.href}
                 data-ocid="nav.link"
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200 tracking-wide"
+                className="text-sm font-[700] text-muted-foreground hover:text-primary transition-colors duration-200 tracking-wide"
                 onClick={(e) => {
                   e.preventDefault();
                   scrollTo(link.href);
@@ -882,14 +1180,32 @@ function Navbar() {
         </ul>
 
         {/* Desktop CTA */}
-        <Button
-          size="sm"
+        <button
+          type="button"
           data-ocid="nav.primary_button"
-          className="hidden lg:flex bg-primary text-primary-foreground hover:bg-primary/85 glow-gold font-semibold tracking-wide text-sm px-5"
+          className="hidden lg:flex items-center gap-2 px-5 py-2 text-sm font-[900] tracking-wide cursor-pointer"
+          style={{
+            background: "linear-gradient(135deg, #FACC15, #F97316)",
+            border: "3px solid #000",
+            boxShadow: "3px 3px 0 #000",
+            borderRadius: "50px",
+            color: "#1e003e",
+            transition: "transform 0.15s ease, box-shadow 0.15s ease",
+          }}
           onClick={() => scrollTo("#register")}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.transform =
+              "translate(-2px, -2px)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "5px 5px 0 #000";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.transform =
+              "translate(0, 0)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "3px 3px 0 #000";
+          }}
         >
           Register ₹150
-        </Button>
+        </button>
 
         {/* Mobile hamburger */}
         <button
@@ -911,7 +1227,7 @@ function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="lg:hidden overflow-hidden bg-background/98 backdrop-blur-md border-b border-border"
+            className="lg:hidden overflow-hidden bg-background/98 backdrop-blur-md border-b-2 border-primary/50"
           >
             <ul className="px-6 py-4 flex flex-col gap-3">
               {NAV_LINKS.map((link) => (
@@ -919,7 +1235,7 @@ function Navbar() {
                   <a
                     href={link.href}
                     data-ocid="nav.link"
-                    className="block text-base font-medium text-muted-foreground hover:text-primary transition-colors py-1"
+                    className="block text-base font-[700] text-muted-foreground hover:text-primary transition-colors py-1"
                     onClick={(e) => {
                       e.preventDefault();
                       setOpen(false);
@@ -931,16 +1247,24 @@ function Navbar() {
                 </li>
               ))}
               <li className="pt-2">
-                <Button
+                <button
+                  type="button"
                   data-ocid="nav.primary_button"
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/85 glow-gold font-semibold"
+                  className="w-full py-3 font-[900] text-sm cursor-pointer"
+                  style={{
+                    background: "linear-gradient(135deg, #FACC15, #F97316)",
+                    border: "3px solid #000",
+                    boxShadow: "3px 3px 0 #000",
+                    borderRadius: "50px",
+                    color: "#1e003e",
+                  }}
                   onClick={() => {
                     setOpen(false);
                     scrollTo("#register");
                   }}
                 >
                   Register — ₹150
-                </Button>
+                </button>
               </li>
             </ul>
           </motion.div>
@@ -952,7 +1276,7 @@ function Navbar() {
 
 /* ─── Hero Section ────────────────────────────────────────────────────────── */
 function HeroSection() {
-  const TARGET_DATE = new Date("2026-03-17T09:00:00");
+  const TARGET_DATE = new Date("2026-03-16T09:00:00");
   const { days, hours, minutes, seconds } = useCountdown(TARGET_DATE);
 
   return (
@@ -960,303 +1284,132 @@ function HeroSection() {
       id="home"
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
     >
-      {/* Particle field canvas */}
-      <ParticleCanvas />
-
-      {/* Circuit board lines */}
-      <CircuitLines />
-
-      {/* Background mesh */}
+      {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute inset-0 bg-background"
           style={{ zIndex: -1 }}
         />
-        <div className="absolute inset-0 scanlines opacity-30" />
-        {/* Radial glow from center */}
+        <div className="absolute inset-0 scanlines opacity-20" />
+        <div className="absolute inset-0 comic-halftone" />
+        {/* Radial glow from center — warm yellow/pink */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 50% 40%, oklch(0.62 0.22 255 / 0.08) 0%, oklch(0.72 0.20 215 / 0.05) 40%, transparent 70%)",
-          }}
-        />
-        {/* Geometric grid lines */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              "linear-gradient(oklch(0.62 0.22 255) 1px, transparent 1px), linear-gradient(90deg, oklch(0.62 0.22 255) 1px, transparent 1px)",
-            backgroundSize: "80px 80px",
+              "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(250,204,21,0.06) 0%, rgba(236,72,153,0.04) 40%, transparent 70%)",
           }}
         />
         {/* Bottom fade */}
         <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      {/* Sound wave lines — left & right */}
-      <SoundWave side="left" />
-      <SoundWave side="right" />
-
-      {/* Corner accents */}
-      <div className="absolute top-24 left-8 w-16 h-16 border-l-2 border-t-2 border-primary/30 pointer-events-none" />
-      <div className="absolute top-24 right-8 w-16 h-16 border-r-2 border-t-2 border-primary/30 pointer-events-none" />
-      <div className="absolute bottom-16 left-8 w-12 h-12 border-l border-b border-accent/20 pointer-events-none" />
-      <div className="absolute bottom-16 right-8 w-12 h-12 border-r border-b border-accent/20 pointer-events-none" />
+      {/* Corner accents — comic style */}
+      <div
+        className="absolute top-24 left-8 w-16 h-16 pointer-events-none"
+        style={{
+          borderLeft: "3px solid rgba(250,204,21,0.5)",
+          borderTop: "3px solid rgba(250,204,21,0.5)",
+        }}
+      />
+      <div
+        className="absolute top-24 right-8 w-16 h-16 pointer-events-none"
+        style={{
+          borderRight: "3px solid rgba(250,204,21,0.5)",
+          borderTop: "3px solid rgba(250,204,21,0.5)",
+        }}
+      />
+      <div
+        className="absolute bottom-16 left-8 w-12 h-12 pointer-events-none"
+        style={{
+          borderLeft: "2px solid rgba(236,72,153,0.4)",
+          borderBottom: "2px solid rgba(236,72,153,0.4)",
+        }}
+      />
+      <div
+        className="absolute bottom-16 right-8 w-12 h-12 pointer-events-none"
+        style={{
+          borderRight: "2px solid rgba(236,72,153,0.4)",
+          borderBottom: "2px solid rgba(236,72,153,0.4)",
+        }}
+      />
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-8 text-center">
-        {/* Logo — half-emerging dragon with sparks */}
+        {/* Logo — cartoon bouncy float */}
         <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.1, ease: "easeOut" }}
-          className="mb-2 flex justify-center"
+          initial={{ opacity: 0, y: 40, scale: 0.5 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.0, ease: [0.34, 1.56, 0.64, 1] }}
+          className="mb-4 flex justify-center"
           style={{ overflow: "visible" }}
         >
           <div
-            className="relative flex justify-center"
-            style={{ height: "220px", width: "420px" }}
+            className="relative flex items-center justify-center"
+            style={{ width: "300px", height: "300px" }}
           >
-            {/* Dragon spark particles */}
-            {(
-              [
-                "p0",
-                "p1",
-                "p2",
-                "p3",
-                "p4",
-                "p5",
-                "p6",
-                "p7",
-                "p8",
-                "p9",
-                "p10",
-                "p11",
-                "p12",
-                "p13",
-                "p14",
-                "p15",
-              ] as const
-            ).map((pid, i) => {
-              const angle = (i / 16) * 360;
-              const radius = 120 + ((i * 7) % 70);
-              const x = Math.cos((angle * Math.PI) / 180) * radius;
-              const y = Math.sin((angle * Math.PI) / 180) * radius * 0.5;
-              const size = 2 + (i % 3) * 2;
-              const colors = [
-                "oklch(0.62 0.22 255)",
-                "oklch(0.72 0.20 215)",
-                "oklch(0.95 0.20 85)",
-                "oklch(1 0.15 100)",
-              ];
-              const color = colors[i % colors.length];
-              return (
-                <motion.div
-                  key={pid}
-                  className="absolute rounded-full pointer-events-none"
-                  style={{
-                    width: size,
-                    height: size,
-                    background: color,
-                    left: "50%",
-                    top: "50%",
-                    boxShadow: `0 0 6px 2px ${color}`,
-                  }}
-                  animate={{
-                    x: [0, x * 0.4, x, x * 1.3],
-                    y: [0, y * 0.4 - 20, y - 40, y - 80],
-                    opacity: [0, 1, 0.8, 0],
-                    scale: [0.5, 1.2, 0.8, 0],
-                  }}
-                  transition={{
-                    duration: 1.8 + (i % 5) * 0.3,
-                    repeat: Number.POSITIVE_INFINITY,
-                    delay: (i / 16) * 2.2,
-                    ease: "easeOut",
-                  }}
-                />
-              );
-            })}
-
-            {/* Extra bright spark streaks */}
-            {(["s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"] as const).map(
-              (sid, i) => {
-                const spread = [-150, -100, -65, -25, 25, 65, 100, 150][i];
-                return (
-                  <motion.div
-                    key={sid}
-                    className="absolute pointer-events-none"
-                    style={{
-                      width: "2px",
-                      height: "30px",
-                      background:
-                        i % 2 === 0
-                          ? "linear-gradient(to top, oklch(0.62 0.22 255), transparent)"
-                          : "linear-gradient(to top, oklch(0.95 0.20 85), transparent)",
-                      left: `calc(50% + ${spread}px)`,
-                      bottom: "55%",
-                      borderRadius: "2px",
-                      transformOrigin: "bottom center",
-                    }}
-                    animate={{
-                      y: [0, -60, -120],
-                      opacity: [0, 1, 0],
-                      scaleY: [0.5, 1, 0.3],
-                      rotate: [spread * 0.15, spread * 0.1, spread * 0.2],
-                    }}
-                    transition={{
-                      duration: 1.4 + (i % 3) * 0.2,
-                      repeat: Number.POSITIVE_INFINITY,
-                      delay: i * 0.28,
-                      ease: "easeOut",
-                    }}
-                  />
-                );
-              },
-            )}
-
-            {/* Deep glow pool at the cut (bottom) */}
-            <div
-              className="absolute pointer-events-none"
-              style={{
-                width: "440px",
-                height: "100px",
-                bottom: "-10px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                background:
-                  "radial-gradient(ellipse 80% 100% at 50% 100%, oklch(0.62 0.22 255 / 0.55) 0%, oklch(0.72 0.20 215 / 0.2) 40%, transparent 70%)",
-                filter: "blur(8px)",
-              }}
-            />
-
-            {/* Outer rotating conic spark ring */}
+            {/* Pulsing yellow aura */}
             <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{
-                duration: 3.5,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "linear",
-              }}
-              className="absolute pointer-events-none"
-              style={{
-                width: "360px",
-                height: "360px",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                background:
-                  "conic-gradient(from 0deg, transparent 0%, oklch(0.62 0.22 255 / 0.7) 18%, oklch(0.95 0.20 85 / 0.5) 22%, transparent 40%, oklch(0.72 0.20 215 / 0.5) 70%, oklch(0.95 0.20 85 / 0.3) 75%, transparent 90%)",
-                borderRadius: "50%",
-                filter: "blur(2px)",
-              }}
-            />
-
-            {/* Pulsing blue aura behind logo */}
-            <motion.div
-              animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0.85, 0.5] }}
+              animate={{ scale: [1, 1.25, 1], opacity: [0.35, 0.65, 0.35] }}
               transition={{
                 duration: 2.2,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "easeInOut",
               }}
-              className="absolute pointer-events-none rounded-full"
+              className="absolute inset-0 rounded-full pointer-events-none"
               style={{
-                width: "320px",
-                height: "320px",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "oklch(0.62 0.22 255 / 0.35)",
-                filter: "blur(30px)",
+                background:
+                  "radial-gradient(circle, rgba(250,204,21,0.4) 0%, rgba(249,115,22,0.2) 50%, transparent 75%)",
+                filter: "blur(18px)",
               }}
             />
 
-            {/* The logo itself — clipped to show only top half emerging */}
-            <div
-              className="absolute"
-              style={{
-                width: "300px",
-                height: "300px",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                overflow: "hidden",
-                clipPath: "inset(0 0 45% 0)",
-                zIndex: 10,
-              }}
-            >
-              {/* Shining border ring */}
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{
-                  duration: 5,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "linear",
-                }}
-                className="absolute inset-0 rounded-full pointer-events-none"
-                style={{
-                  background:
-                    "conic-gradient(from 0deg, transparent 0%, oklch(0.95 0.20 85) 15%, oklch(0.62 0.22 255) 30%, transparent 50%, oklch(0.72 0.20 215) 80%, transparent 100%)",
-                  padding: "3px",
-                  borderRadius: "50%",
-                  zIndex: 12,
-                }}
-              />
-              <img
-                src="/assets/uploads/WhatsApp-Image-2026-03-05-at-12.17.43-PM-1.jpeg"
-                alt="ELZIA 2K26 Logo"
-                className="w-full h-full rounded-full object-cover relative"
-                style={{
-                  borderWidth: "3px",
-                  borderStyle: "solid",
-                  borderColor: "oklch(0.62 0.22 255 / 0.9)",
-                  boxShadow:
-                    "0 0 40px 12px oklch(0.62 0.22 255 / 0.6), 0 0 80px 30px oklch(0.62 0.22 255 / 0.2), inset 0 0 20px oklch(0.72 0.20 215 / 0.2)",
-                  zIndex: 11,
-                }}
-              />
-
-              {/* Dragon eye red glow pulse */}
-              <div
-                className="dragon-eye-glow absolute rounded-full pointer-events-none"
-                style={{
-                  width: "16px",
-                  height: "8px",
-                  background: "rgba(220, 38, 38, 0.85)",
-                  top: "28%",
-                  left: "42%",
-                  transform: "translateX(-50%)",
-                  borderRadius: "50%",
-                  zIndex: 20,
-                }}
-                aria-hidden="true"
-              />
-            </div>
-
-            {/* Bottom cut glowing edge line */}
+            {/* Pink secondary aura */}
             <motion.div
-              animate={{ opacity: [0.6, 1, 0.6], scaleX: [0.9, 1.05, 0.9] }}
+              animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.5, 0.25] }}
               transition={{
                 duration: 1.8,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "easeInOut",
+                delay: 0.5,
               }}
-              className="absolute pointer-events-none"
+              className="absolute rounded-full pointer-events-none"
               style={{
-                width: "280px",
-                height: "3px",
-                bottom: "72px",
-                left: "50%",
-                transform: "translateX(-50%)",
+                inset: "20px",
                 background:
-                  "linear-gradient(90deg, transparent, oklch(0.62 0.22 255) 20%, oklch(0.95 0.20 85) 50%, oklch(0.62 0.22 255) 80%, transparent)",
-                boxShadow: "0 0 12px 4px oklch(0.62 0.22 255 / 0.8)",
-                borderRadius: "2px",
-                zIndex: 15,
+                  "radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%)",
+                filter: "blur(10px)",
               }}
             />
+
+            {/* The actual cartoon logo — bouncy float */}
+            <motion.div
+              animate={{ y: [0, -16, 0], rotate: [-2, 2, -2] }}
+              transition={{
+                duration: 3,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+              className="relative cartoon-glow"
+              style={{
+                width: "280px",
+                height: "280px",
+                zIndex: 10,
+              }}
+            >
+              <img
+                src="/assets/generated/elzia-cartoon-logo-transparent.dim_400x400.png"
+                alt="ELZIA 2K26 Logo"
+                className="w-full h-full object-contain"
+                style={{
+                  borderRadius: "50%",
+                  border: "6px solid #FACC15",
+                  boxShadow:
+                    "4px 4px 0 #000, 0 0 30px 10px rgba(250,204,21,0.3)",
+                  background: "rgba(30,0,62,0.6)",
+                }}
+              />
+            </motion.div>
           </div>
         </motion.div>
 
@@ -1270,25 +1423,57 @@ function HeroSection() {
         >
           <Badge
             variant="outline"
-            className="text-xs tracking-[0.2em] uppercase border-primary/40 text-primary px-4 py-1 font-semibold"
+            className="text-xs tracking-[0.2em] uppercase px-4 py-1 font-[700]"
+            style={{
+              border: "2px solid #FACC15",
+              color: "#FACC15",
+              boxShadow: "2px 2px 0 #000",
+              background: "rgba(250,204,21,0.1)",
+            }}
           >
             National Level Technical Symposium
           </Badge>
         </motion.div>
 
-        {/* Title with glitch effect */}
+        {/* Title */}
         <motion.h1
           variants={fadeUp}
           initial="hidden"
           animate="visible"
           custom={1}
-          className="font-display text-6xl sm:text-8xl lg:text-9xl font-[800] leading-none tracking-tight mb-3"
+          className="font-display font-[900] leading-none tracking-tight mb-2"
+          style={{ fontSize: "clamp(3.5rem, 10vw, 7rem)" }}
         >
           <GlitchTitle>
-            <span className="text-gradient-gold">ELZIA</span>
+            <span
+              className="gold-shimmer"
+              style={{
+                color: "#FACC15",
+                textShadow:
+                  "3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 4px 4px 0 rgba(0,0,0,0.5)",
+              }}
+            >
+              ELZIA-2K26
+            </span>
           </GlitchTitle>
-          <span className="text-foreground/90"> 2K26</span>
         </motion.h1>
+
+        {/* EEE SYMPOSIUM subtitle */}
+        <motion.p
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          custom={1.5}
+          className="font-display font-[700] tracking-[0.35em] uppercase mb-3"
+          style={{
+            fontSize: "clamp(1rem, 2.5vw, 1.5rem)",
+            color: "#EC4899",
+            letterSpacing: "0.35em",
+            textShadow: "1px 1px 0 #000",
+          }}
+        >
+          EEE SYMPOSIUM
+        </motion.p>
 
         {/* Dept */}
         <motion.p
@@ -1296,7 +1481,7 @@ function HeroSection() {
           initial="hidden"
           animate="visible"
           custom={2}
-          className="text-muted-foreground text-sm sm:text-base tracking-widest uppercase mb-2"
+          className="text-muted-foreground text-xs sm:text-sm tracking-widest uppercase mb-2"
         >
           Department of Electrical &amp; Electronics Engineering
         </motion.p>
@@ -1307,7 +1492,7 @@ function HeroSection() {
           initial="hidden"
           animate="visible"
           custom={2.5}
-          className="text-muted-foreground/70 text-xs sm:text-sm tracking-wide mb-2"
+          className="text-muted-foreground/70 text-xs tracking-wide mb-2"
         >
           HOD/EEE — Dr. NP Ananthamoorthy
         </motion.p>
@@ -1318,24 +1503,46 @@ function HeroSection() {
           initial="hidden"
           animate="visible"
           custom={3}
-          className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm font-medium"
+          className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm font-[700]"
         >
-          <span className="flex items-center gap-1.5 text-primary">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-            March 17, 2026
+          <span
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+            style={{
+              background: "rgba(250,204,21,0.15)",
+              border: "2px solid #FACC15",
+              color: "#FACC15",
+              boxShadow: "2px 2px 0 #000",
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
+            March 16, 2026
           </span>
-          <span className="text-border">|</span>
-          <span className="text-accent flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block" />
+          <span
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+            style={{
+              background: "rgba(236,72,153,0.15)",
+              border: "2px solid #EC4899",
+              color: "#EC4899",
+              boxShadow: "2px 2px 0 #000",
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-pink-400 inline-block" />
             9:00 AM – 3:00 PM
           </span>
-          <span className="text-border">|</span>
-          <span className="text-muted-foreground flex items-center gap-1.5">
+          <span
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+            style={{
+              background: "rgba(249,115,22,0.15)",
+              border: "2px solid #F97316",
+              color: "#F97316",
+              boxShadow: "2px 2px 0 #000",
+            }}
+          >
             🍽️ Food Provided
           </span>
         </motion.div>
 
-        {/* Countdown Timer with digit flip */}
+        {/* Countdown Timer */}
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -1343,21 +1550,30 @@ function HeroSection() {
           custom={4}
           className="mb-10"
         >
-          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-4">
+          <p
+            className="text-xs tracking-[0.2em] uppercase font-[700] mb-4"
+            style={{ color: "#EC4899" }}
+          >
             Event Starts In
           </p>
-          <div className="flex items-center justify-center gap-3 sm:gap-5">
+          <div className="flex items-center justify-center gap-2 sm:gap-3">
             {[
               { value: days, label: "Days" },
               { value: hours, label: "Hours" },
-              { value: minutes, label: "Min" },
-              { value: seconds, label: "Sec" },
+              { value: minutes, label: "Mins" },
+              { value: seconds, label: "Secs" },
             ].map(({ value, label }, i) => (
-              <div key={label} className="flex items-center gap-3 sm:gap-5">
+              <div key={label} className="flex items-center gap-2 sm:gap-3">
                 <FlipDigit value={value} label={label} />
                 {i < 3 && (
-                  <span className="text-2xl sm:text-3xl font-[800] text-primary mb-4 leading-none">
-                    :
+                  <span
+                    className="text-2xl sm:text-3xl font-[900] mb-4 leading-none select-none"
+                    style={{
+                      color: "#EC4899",
+                      textShadow: "1px 1px 0 #000",
+                    }}
+                  >
+                    •
                   </span>
                 )}
               </div>
@@ -1365,7 +1581,7 @@ function HeroSection() {
           </div>
         </motion.div>
 
-        {/* CTAs with ripple */}
+        {/* CTAs */}
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -1376,7 +1592,16 @@ function HeroSection() {
           <RippleButton
             size="lg"
             data-ocid="hero.primary_button"
-            className="bg-primary text-primary-foreground hover:bg-primary/85 glow-gold font-bold tracking-wide text-base px-8 py-6 h-auto font-display"
+            className="font-[900] tracking-wide text-base px-8 py-6 h-auto font-display"
+            style={
+              {
+                background: "linear-gradient(135deg, #FACC15, #F97316)",
+                border: "3px solid #000",
+                boxShadow: "4px 4px 0 #000",
+                color: "#1e003e",
+                borderRadius: "50px",
+              } as React.CSSProperties
+            }
             onClick={() => {
               document
                 .querySelector("#register")
@@ -1389,7 +1614,16 @@ function HeroSection() {
             size="lg"
             variant="outline"
             data-ocid="hero.secondary_button"
-            className="border-accent/40 text-accent hover:bg-accent/10 hover:border-accent/70 font-semibold tracking-wide text-base px-8 py-6 h-auto glow-cyan"
+            className="font-[700] tracking-wide text-base px-8 py-6 h-auto"
+            style={
+              {
+                border: "3px solid #EC4899",
+                boxShadow: "4px 4px 0 #000",
+                color: "#EC4899",
+                borderRadius: "50px",
+                background: "rgba(236,72,153,0.1)",
+              } as React.CSSProperties
+            }
             onClick={() => {
               document
                 .querySelector("#events")
@@ -1413,7 +1647,7 @@ function HeroSection() {
             ?.scrollIntoView({ behavior: "smooth" })
         }
       >
-        <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50">
+        <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 font-[700]">
           Scroll
         </span>
         <motion.div
@@ -1497,12 +1731,11 @@ function PrizesSection() {
       id="prizes"
       className="py-24 lg:py-36 px-6 lg:px-8 relative overflow-hidden"
     >
-      {/* Background glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 60% 50% at 50% 50%, oklch(0.62 0.22 255 / 0.05) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(250,204,21,0.04) 0%, transparent 70%)",
         }}
       />
 
@@ -1522,18 +1755,25 @@ function PrizesSection() {
             <FadeUp key={prize.title} delay={i * 1.5}>
               <motion.div
                 data-ocid={`prizes.item.${i + 1}`}
-                whileHover={{ y: -4, scale: 1.02 }}
-                transition={{ duration: 0.25 }}
-                className="group p-6 rounded-xl border border-border bg-card hover:border-primary/40 transition-colors duration-300 hover:shadow-[0_0_24px_0_oklch(0.78_0.18_80_/_0.12)]"
+                whileHover={{ y: -4, scale: 1.03, rotate: 0.5 }}
+                transition={{ duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }}
+                className="group p-6 rounded-xl bg-card transition-colors duration-300"
+                style={{
+                  border: `3px solid ${prize.borderColor}`,
+                  boxShadow: "4px 4px 0 #000",
+                }}
               >
                 <motion.div
                   className="text-3xl mb-4"
-                  whileHover={{ scale: 1.2, rotate: [0, -8, 8, 0] }}
+                  whileHover={{ scale: 1.3, rotate: [0, -10, 10, 0] }}
                   transition={{ duration: 0.4 }}
                 >
                   {prize.icon}
                 </motion.div>
-                <h3 className="font-display text-lg font-[700] mb-2 text-foreground">
+                <h3
+                  className="font-display text-lg font-[800] mb-2 text-foreground"
+                  style={{ textShadow: "1px 1px 0 rgba(0,0,0,0.5)" }}
+                >
                   {prize.title}
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -1571,7 +1811,8 @@ function RulesSection() {
   return (
     <section
       id="rules"
-      className="py-24 lg:py-36 px-6 lg:px-8 border-t border-border"
+      className="py-24 lg:py-36 px-6 lg:px-8"
+      style={{ borderTop: "2px solid oklch(var(--border))" }}
     >
       <div className="max-w-6xl mx-auto">
         <FadeUp className="text-center mb-16">
@@ -1586,37 +1827,43 @@ function RulesSection() {
           <FadeUp delay={0}>
             <div
               data-ocid="rules.panel"
-              className="p-6 lg:p-8 rounded-xl border bg-card"
-              style={{ borderColor: "oklch(0.62 0.22 255 / 0.3)" }}
+              className="p-6 lg:p-8 rounded-xl bg-card"
+              style={{
+                border: "3px solid #FACC15",
+                boxShadow: "4px 4px 0 #000",
+              }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{
-                    background: "oklch(0.62 0.22 255 / 0.12)",
-                    border: "1px solid oklch(0.62 0.22 255 / 0.25)",
+                    background: "rgba(250,204,21,0.15)",
+                    border: "2px solid #FACC15",
+                    boxShadow: "2px 2px 0 #000",
                   }}
                 >
-                  <BookOpen className="h-4 w-4 text-primary" />
+                  <BookOpen className="h-4 w-4" style={{ color: "#FACC15" }} />
                 </div>
-                <h3 className="font-display text-xl font-[700] text-gradient-gold">
+                <h3 className="font-display text-xl font-[800] text-gradient-gold">
                   Paper Presentation Rules
                 </h3>
               </div>
               <ul className="space-y-3">
-                {paperRules.map((rule) => (
+                {paperRules.map((rule, idx) => (
                   <li
                     key={rule}
                     className="flex items-start gap-3 text-sm text-muted-foreground"
                   >
                     <span
-                      className="mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                      className="mt-0.5 w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-xs font-[900]"
                       style={{
-                        background: "oklch(0.62 0.22 255 / 0.12)",
-                        color: "oklch(0.62 0.22 255)",
+                        background: "#FACC15",
+                        color: "#1e003e",
+                        border: "2px solid #000",
+                        boxShadow: "1px 1px 0 #000",
                       }}
                     >
-                      {paperRules.indexOf(rule) + 1}
+                      {idx + 1}
                     </span>
                     <span className="leading-relaxed">{rule}</span>
                   </li>
@@ -1629,40 +1876,43 @@ function RulesSection() {
           <FadeUp delay={1.5}>
             <div
               data-ocid="rules.card"
-              className="p-6 lg:p-8 rounded-xl border bg-card"
-              style={{ borderColor: "oklch(0.72 0.20 215 / 0.3)" }}
+              className="p-6 lg:p-8 rounded-xl bg-card"
+              style={{
+                border: "3px solid #EC4899",
+                boxShadow: "4px 4px 0 #000",
+              }}
             >
               <div className="flex items-center gap-3 mb-6">
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{
-                    background: "oklch(0.72 0.20 215 / 0.12)",
-                    border: "1px solid oklch(0.72 0.20 215 / 0.25)",
+                    background: "rgba(236,72,153,0.15)",
+                    border: "2px solid #EC4899",
+                    boxShadow: "2px 2px 0 #000",
                   }}
                 >
-                  <Shield
-                    className="h-4 w-4"
-                    style={{ color: "oklch(0.72 0.20 215)" }}
-                  />
+                  <Shield className="h-4 w-4" style={{ color: "#EC4899" }} />
                 </div>
-                <h3 className="font-display text-xl font-[700] text-gradient-cyan">
+                <h3 className="font-display text-xl font-[800] text-gradient-cyan">
                   General Rules
                 </h3>
               </div>
               <ul className="space-y-3">
-                {generalRules.map((rule) => (
+                {generalRules.map((rule, idx) => (
                   <li
                     key={rule}
                     className="flex items-start gap-3 text-sm text-muted-foreground"
                   >
                     <span
-                      className="mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                      className="mt-0.5 w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-xs font-[900]"
                       style={{
-                        background: "oklch(0.72 0.20 215 / 0.12)",
-                        color: "oklch(0.72 0.20 215)",
+                        background: "#EC4899",
+                        color: "#fff",
+                        border: "2px solid #000",
+                        boxShadow: "1px 1px 0 #000",
                       }}
                     >
-                      {generalRules.indexOf(rule) + 1}
+                      {idx + 1}
                     </span>
                     <span className="leading-relaxed">{rule}</span>
                   </li>
@@ -1683,12 +1933,11 @@ function RegisterSection() {
       id="register"
       className="py-24 lg:py-36 px-6 lg:px-8 relative overflow-hidden"
     >
-      {/* Glow bg */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.72 0.20 215 / 0.05) 0%, transparent 70%)",
+            "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(236,72,153,0.05) 0%, transparent 70%)",
         }}
       />
 
@@ -1709,11 +1958,11 @@ function RegisterSection() {
             <div className="flex flex-col items-center">
               <div
                 data-ocid="register.card"
-                className="w-full max-w-sm mx-auto p-8 rounded-2xl border flex flex-col items-center gap-6"
+                className="w-full max-w-sm mx-auto p-8 rounded-2xl flex flex-col items-center gap-6"
                 style={{
-                  border: "1px solid oklch(0.62 0.22 255 / 0.4)",
-                  background: "oklch(0.08 0.025 260)",
-                  boxShadow: "0 0 40px 0 oklch(0.62 0.22 255 / 0.1)",
+                  border: "3px solid #FACC15",
+                  background: "oklch(0.14 0.040 280)",
+                  boxShadow: "6px 6px 0 #000",
                 }}
               >
                 {/* QR Code */}
@@ -1722,6 +1971,10 @@ function RegisterSection() {
                     src="/assets/uploads/WhatsApp-Image-2026-03-02-at-9.18.34-AM-2.jpeg"
                     alt="UPI Payment QR Code"
                     className="w-48 h-48 rounded-xl object-contain bg-white p-2"
+                    style={{
+                      border: "3px solid #000",
+                      boxShadow: "3px 3px 0 #000",
+                    }}
                   />
                   <p className="text-xs text-muted-foreground text-center">
                     UPI ID: karthikapichandi2003@okhdfcbank
@@ -1729,7 +1982,13 @@ function RegisterSection() {
                 </div>
 
                 <div className="text-center">
-                  <p className="font-display text-2xl font-[800] text-gradient-gold mb-1">
+                  <p
+                    className="font-display text-2xl font-[900] mb-1"
+                    style={{
+                      color: "#FACC15",
+                      textShadow: "2px 2px 0 #000",
+                    }}
+                  >
                     ₹150
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -1747,13 +2006,17 @@ function RegisterSection() {
               <div
                 className="p-5 rounded-xl flex items-start gap-4"
                 style={{
-                  background: "oklch(0.62 0.22 255 / 0.08)",
-                  border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+                  background: "rgba(250,204,21,0.1)",
+                  border: "2px solid #FACC15",
+                  boxShadow: "3px 3px 0 #000",
                 }}
               >
                 <span className="text-2xl flex-shrink-0">🍽️</span>
                 <div>
-                  <p className="font-display font-[700] text-primary text-base mb-1">
+                  <p
+                    className="font-display font-[800] text-base mb-1"
+                    style={{ color: "#FACC15" }}
+                  >
                     Food Provided
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -1767,11 +2030,12 @@ function RegisterSection() {
               <div
                 className="p-5 rounded-xl"
                 style={{
-                  background: "oklch(0.08 0.025 260)",
-                  border: "1px solid oklch(0.18 0.025 260)",
+                  background: "oklch(0.14 0.040 280)",
+                  border: "2px solid oklch(var(--border))",
+                  boxShadow: "3px 3px 0 #000",
                 }}
               >
-                <h4 className="font-display font-[700] text-foreground mb-3 text-base">
+                <h4 className="font-display font-[800] text-foreground mb-3 text-base">
                   What's Included
                 </h4>
                 <ul className="space-y-2">
@@ -1786,7 +2050,9 @@ function RegisterSection() {
                       key={item}
                       className="flex items-center gap-2 text-sm text-muted-foreground"
                     >
-                      <span className="text-primary">✦</span>
+                      <span style={{ color: "#FACC15", fontWeight: 900 }}>
+                        ✦
+                      </span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -1797,13 +2063,14 @@ function RegisterSection() {
               <div
                 className="p-5 rounded-xl"
                 style={{
-                  background: "oklch(0.72 0.20 215 / 0.06)",
-                  border: "1px solid oklch(0.72 0.20 215 / 0.2)",
+                  background: "rgba(236,72,153,0.08)",
+                  border: "2px solid #EC4899",
+                  boxShadow: "3px 3px 0 #000",
                 }}
               >
                 <h4
-                  className="font-display font-[700] mb-3 text-base"
-                  style={{ color: "oklch(0.72 0.20 215)" }}
+                  className="font-display font-[800] mb-3 text-base"
+                  style={{ color: "#EC4899" }}
                 >
                   Important Notes
                 </h4>
@@ -1811,14 +2078,22 @@ function RegisterSection() {
                   <li>⚡ Maximum 2 events per student</li>
                   <li>⚡ Bring valid college ID card</li>
                   <li>⚡ Time: 9:00 AM – 3:00 PM</li>
-                  <li>⚡ March 17, 2026</li>
+                  <li>⚡ March 16, 2026</li>
                 </ul>
               </div>
 
-              <RippleButton
-                size="lg"
+              <button
+                type="button"
                 data-ocid="register.primary_button"
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/85 glow-gold font-bold text-base py-6 h-auto font-display"
+                className="w-full py-4 font-[900] text-base cursor-pointer flex items-center justify-center gap-2"
+                style={{
+                  background: "linear-gradient(135deg, #FACC15, #F97316)",
+                  border: "3px solid #000",
+                  boxShadow: "4px 4px 0 #000",
+                  color: "#1e003e",
+                  borderRadius: "50px",
+                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                }}
                 onClick={() =>
                   window.open(
                     "https://docs.google.com/forms/d/e/1FAIpQLSeKVC5JVXBknHq2GGhBA4Wosnx_-tjmI64G_fuN4T6HHO9_sQ/viewform?usp=publish-editor",
@@ -1826,10 +2101,22 @@ function RegisterSection() {
                     "noopener,noreferrer",
                   )
                 }
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform =
+                    "translate(-2px, -2px)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "6px 6px 0 #000";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform =
+                    "translate(0, 0)";
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    "4px 4px 0 #000";
+                }}
               >
-                <Gift className="mr-2 h-5 w-5" />
+                <Gift className="h-5 w-5" />
                 Fill Registration Form
-              </RippleButton>
+              </button>
             </div>
           </FadeUp>
         </div>
@@ -1846,10 +2133,13 @@ function ContactSection() {
     { name: "Merphin", phone: "9677150885", role: "Student Coordinator" },
   ];
 
+  const coordinatorColors = ["#FACC15", "#EC4899", "#F97316"];
+
   return (
     <section
       id="contact"
-      className="py-24 lg:py-36 px-6 lg:px-8 border-t border-border"
+      className="py-24 lg:py-36 px-6 lg:px-8"
+      style={{ borderTop: "2px solid oklch(var(--border))" }}
     >
       <div className="max-w-6xl mx-auto">
         <FadeUp className="text-center mb-16">
@@ -1865,65 +2155,92 @@ function ContactSection() {
 
         {/* Student Coordinators */}
         <FadeUp className="mb-6">
-          <p className="text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-4 text-center">
+          <p
+            className="text-xs font-[800] tracking-[0.2em] uppercase mb-4 text-center"
+            style={{ color: "#FACC15" }}
+          >
             Student Coordinators
           </p>
         </FadeUp>
         <div className="grid sm:grid-cols-3 gap-5 mb-8">
-          {STUDENT_COORDINATORS.map((coordinator, i) => (
-            <FadeUp key={coordinator.name} delay={i * 1}>
-              <div
-                data-ocid={`contact.card.${i + 1}`}
-                className="p-5 rounded-xl border bg-card flex flex-col gap-4"
-                style={{ borderColor: "oklch(0.62 0.22 255 / 0.3)" }}
-              >
-                <div>
-                  <Badge
-                    variant="outline"
-                    className="text-xs tracking-widest uppercase border-primary/40 text-primary mb-2"
-                  >
-                    Coordinator
-                  </Badge>
-                  <h3 className="font-display text-lg font-[700] text-gradient-gold mb-0.5">
-                    {coordinator.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {coordinator.role}
-                  </p>
-                </div>
-                <a
-                  href={`tel:${coordinator.phone}`}
-                  data-ocid="contact.link"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group"
+          {STUDENT_COORDINATORS.map((coordinator, i) => {
+            const color = coordinatorColors[i];
+            return (
+              <FadeUp key={coordinator.name} delay={i * 1}>
+                <div
+                  data-ocid={`contact.card.${i + 1}`}
+                  className="p-5 rounded-xl bg-card flex flex-col gap-4"
+                  style={{
+                    border: `3px solid ${color}`,
+                    boxShadow: "4px 4px 0 #000",
+                  }}
                 >
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
-                    style={{
-                      background: "oklch(0.62 0.22 255 / 0.12)",
-                      border: "1px solid oklch(0.62 0.22 255 / 0.2)",
-                    }}
-                  >
-                    <Phone className="h-3.5 w-3.5 text-primary" />
+                  <div>
+                    <Badge
+                      variant="outline"
+                      className="text-xs tracking-widest uppercase mb-2 font-[700]"
+                      style={{
+                        border: `2px solid ${color}`,
+                        color,
+                        boxShadow: "1px 1px 0 #000",
+                      }}
+                    >
+                      Coordinator
+                    </Badge>
+                    <h3
+                      className="font-display text-lg font-[800] mb-0.5"
+                      style={{
+                        color,
+                        textShadow: "1px 1px 0 rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      {coordinator.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {coordinator.role}
+                    </p>
                   </div>
-                  <span className="text-sm font-medium">
-                    {coordinator.phone}
-                  </span>
-                </a>
-                <a
-                  href={`tel:${coordinator.phone}`}
-                  data-ocid="contact.primary_button"
-                >
-                  <Button
-                    size="sm"
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/85 glow-gold font-semibold"
+                  <a
+                    href={`tel:${coordinator.phone}`}
+                    data-ocid="contact.link"
+                    className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group"
                   >
-                    <Phone className="mr-1.5 h-3.5 w-3.5" />
-                    Call
-                  </Button>
-                </a>
-              </div>
-            </FadeUp>
-          ))}
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
+                      style={{
+                        background: `${color}22`,
+                        border: `2px solid ${color}`,
+                      }}
+                    >
+                      <Phone className="h-3.5 w-3.5" style={{ color }} />
+                    </div>
+                    <span className="text-sm font-[700]">
+                      {coordinator.phone}
+                    </span>
+                  </a>
+                  <a
+                    href={`tel:${coordinator.phone}`}
+                    data-ocid="contact.primary_button"
+                  >
+                    <button
+                      type="button"
+                      className="w-full py-2 font-[900] text-sm cursor-pointer flex items-center justify-center gap-1.5"
+                      style={{
+                        background: color,
+                        border: "2px solid #000",
+                        boxShadow: "2px 2px 0 #000",
+                        color: "#1e003e",
+                        borderRadius: "50px",
+                      }}
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                      Call
+                    </button>
+                  </a>
+                </div>
+              </FadeUp>
+            );
+          })}
         </div>
 
         {/* Faculty, HOD, Venue & Event Info */}
@@ -1932,20 +2249,24 @@ function ContactSection() {
           <FadeUp delay={0}>
             <div
               data-ocid="contact.panel"
-              className="p-6 rounded-xl border bg-card h-full"
-              style={{ borderColor: "oklch(0.72 0.20 215 / 0.3)" }}
+              className="p-6 rounded-xl bg-card h-full"
+              style={{
+                border: "3px solid #EC4899",
+                boxShadow: "4px 4px 0 #000",
+              }}
             >
               <Badge
                 variant="outline"
-                className="text-xs tracking-widest uppercase mb-3"
+                className="text-xs tracking-widest uppercase mb-3 font-[700]"
                 style={{
-                  borderColor: "oklch(0.72 0.20 215 / 0.4)",
-                  color: "oklch(0.72 0.20 215)",
+                  border: "2px solid #EC4899",
+                  color: "#EC4899",
+                  boxShadow: "1px 1px 0 #000",
                 }}
               >
                 HOD / EEE
               </Badge>
-              <h3 className="font-display text-xl font-[700] text-gradient-cyan mb-1">
+              <h3 className="font-display text-xl font-[800] text-gradient-cyan mb-1">
                 Dr. NP Ananthamoorthy
               </h3>
               <p className="text-sm text-muted-foreground">
@@ -1958,27 +2279,39 @@ function ContactSection() {
           <FadeUp delay={1}>
             <div
               data-ocid="contact.card"
-              className="p-6 rounded-xl border bg-card h-full"
-              style={{ borderColor: "oklch(0.62 0.22 255 / 0.3)" }}
+              className="p-6 rounded-xl bg-card h-full"
+              style={{
+                border: "3px solid #FACC15",
+                boxShadow: "4px 4px 0 #000",
+              }}
             >
               <Badge
                 variant="outline"
-                className="text-xs tracking-widest uppercase border-primary/40 text-primary mb-3"
+                className="text-xs tracking-widest uppercase mb-3 font-[700]"
+                style={{
+                  border: "2px solid #FACC15",
+                  color: "#FACC15",
+                  boxShadow: "1px 1px 0 #000",
+                }}
               >
                 Faculty Coordinator
               </Badge>
               <div className="flex items-start gap-3">
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{
-                    background: "oklch(0.62 0.22 255 / 0.12)",
-                    border: "1px solid oklch(0.62 0.22 255 / 0.25)",
+                    background: "rgba(250,204,21,0.15)",
+                    border: "2px solid #FACC15",
+                    boxShadow: "2px 2px 0 #000",
                   }}
                 >
-                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <GraduationCap
+                    className="h-5 w-5"
+                    style={{ color: "#FACC15" }}
+                  />
                 </div>
                 <div>
-                  <h3 className="font-display text-xl font-[700] text-gradient-gold mb-1">
+                  <h3 className="font-display text-xl font-[800] text-gradient-gold mb-1">
                     Dr. Joshua Daniel
                   </h3>
                   <p className="text-sm text-muted-foreground">
@@ -1993,34 +2326,42 @@ function ContactSection() {
           <FadeUp delay={2}>
             <div
               data-ocid="contact.card"
-              className="p-6 rounded-xl border bg-card h-full"
-              style={{ borderColor: "oklch(0.72 0.20 215 / 0.3)" }}
+              className="p-6 rounded-xl bg-card h-full"
+              style={{
+                border: "3px solid #F97316",
+                boxShadow: "4px 4px 0 #000",
+              }}
             >
               <Badge
                 variant="outline"
-                className="text-xs tracking-widest uppercase mb-3"
+                className="text-xs tracking-widest uppercase mb-3 font-[700]"
                 style={{
-                  borderColor: "oklch(0.72 0.20 215 / 0.4)",
-                  color: "oklch(0.72 0.20 215)",
+                  border: "2px solid #F97316",
+                  color: "#F97316",
+                  boxShadow: "1px 1px 0 #000",
                 }}
               >
                 Venue
               </Badge>
               <div className="flex items-start gap-3">
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                   style={{
-                    background: "oklch(0.72 0.20 215 / 0.12)",
-                    border: "1px solid oklch(0.72 0.20 215 / 0.25)",
+                    background: "rgba(249,115,22,0.15)",
+                    border: "2px solid #F97316",
+                    boxShadow: "2px 2px 0 #000",
                   }}
                 >
-                  <MapPin
-                    className="h-5 w-5"
-                    style={{ color: "oklch(0.72 0.20 215)" }}
-                  />
+                  <MapPin className="h-5 w-5" style={{ color: "#F97316" }} />
                 </div>
                 <div>
-                  <h3 className="font-display text-lg font-[700] text-gradient-cyan mb-1">
+                  <h3
+                    className="font-display text-lg font-[800] mb-1"
+                    style={{
+                      color: "#F97316",
+                      textShadow: "1px 1px 0 rgba(0,0,0,0.5)",
+                    }}
+                  >
                     Hindusthan College of Engineering and Technology
                   </h3>
                   <p className="text-sm text-muted-foreground">
@@ -2036,25 +2377,37 @@ function ContactSection() {
             <div
               className="p-6 rounded-xl h-full"
               style={{
-                background: "oklch(0.08 0.025 260)",
-                border: "1px solid oklch(0.18 0.025 260)",
+                background: "oklch(0.14 0.040 280)",
+                border: "2px solid oklch(var(--border))",
+                boxShadow: "3px 3px 0 #000",
               }}
             >
-              <h4 className="font-display font-[700] text-foreground mb-4">
+              <h4 className="font-display font-[800] text-foreground mb-4">
                 Event Details
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                  { label: "Date", value: "March 17, 2026" },
-                  { label: "Time", value: "9:00 AM – 3:00 PM" },
-                  { label: "Fee", value: "₹150 / head" },
-                  { label: "Events", value: "Max 2 / student" },
+                  { label: "Date", value: "March 16, 2026", color: "#FACC15" },
+                  {
+                    label: "Time",
+                    value: "9:00 AM – 3:00 PM",
+                    color: "#EC4899",
+                  },
+                  { label: "Fee", value: "₹150 / head", color: "#F97316" },
+                  {
+                    label: "Events",
+                    value: "Max 2 / student",
+                    color: "#a855f7",
+                  },
                 ].map((item) => (
                   <div key={item.label}>
                     <p className="text-xs text-muted-foreground/60 uppercase tracking-wider mb-0.5">
                       {item.label}
                     </p>
-                    <p className="font-display font-[700] text-sm text-foreground">
+                    <p
+                      className="font-display font-[800] text-sm"
+                      style={{ color: item.color }}
+                    >
                       {item.value}
                     </p>
                   </div>
@@ -2073,16 +2426,24 @@ function ContactSection() {
               <div
                 className="p-5 rounded-xl flex items-center gap-3 group cursor-pointer transition-all h-full"
                 style={{
-                  background: "oklch(0.62 0.22 255 / 0.06)",
-                  border: "1px solid oklch(0.62 0.22 255 / 0.2)",
+                  background: "rgba(250,204,21,0.08)",
+                  border: "2px solid #FACC15",
+                  boxShadow: "3px 3px 0 #000",
+                  transition: "transform 0.15s ease, box-shadow 0.15s ease",
                 }}
               >
-                <Mail className="h-5 w-5 text-primary flex-shrink-0" />
+                <Mail
+                  className="h-5 w-5 flex-shrink-0"
+                  style={{ color: "#FACC15" }}
+                />
                 <div>
                   <p className="text-xs text-muted-foreground mb-0.5">
                     Send Abstract / Queries
                   </p>
-                  <p className="text-sm font-medium text-primary group-hover:underline">
+                  <p
+                    className="text-sm font-[700] group-hover:underline"
+                    style={{ color: "#FACC15" }}
+                  >
                     elzia2k26@gmail.com
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -2102,18 +2463,31 @@ function ContactSection() {
 function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-border py-10 px-6 lg:px-8">
+    <footer
+      className="py-10 px-6 lg:px-8"
+      style={{ borderTop: "3px solid #FACC15", boxShadow: "0 -2px 0 0 #000" }}
+    >
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
           {/* Brand */}
           <div className="flex items-center gap-3">
             <img
-              src="/assets/uploads/WhatsApp-Image-2026-03-05-at-12.17.43-PM-1.jpeg"
+              src="/assets/generated/elzia-cartoon-logo-transparent.dim_400x400.png"
               alt="ELZIA Logo"
-              className="h-8 w-8 rounded-full object-cover border border-primary/30"
+              className="h-8 w-8 rounded-full object-cover"
+              style={{
+                border: "2px solid #FACC15",
+                boxShadow: "2px 2px 0 #000",
+              }}
             />
             <div>
-              <p className="font-display font-[800] text-base text-gradient-gold leading-none">
+              <p
+                className="font-display font-[900] text-base leading-none"
+                style={{
+                  color: "#FACC15",
+                  textShadow: "1px 1px 0 #000",
+                }}
+              >
                 ELZIA 2K26
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -2129,7 +2503,7 @@ function Footer() {
                 <a
                   href={link.href}
                   data-ocid="nav.link"
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                  className="text-xs font-[700] text-muted-foreground hover:text-primary transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
                     document
@@ -2148,14 +2522,14 @@ function Footer() {
             <a
               href="mailto:elzia2k26@gmail.com"
               data-ocid="footer.link"
-              className="hover:text-primary transition-colors"
+              className="hover:text-primary transition-colors font-[700]"
             >
               elzia2k26@gmail.com
             </a>
             <a
               href="tel:9585850745"
               data-ocid="footer.link"
-              className="hover:text-primary transition-colors"
+              className="hover:text-primary transition-colors font-[700]"
             >
               9585850745
             </a>
@@ -2167,7 +2541,7 @@ function Footer() {
           className="h-px mb-5"
           style={{
             background:
-              "linear-gradient(90deg, transparent, oklch(0.62 0.22 255 / 0.3), transparent)",
+              "linear-gradient(90deg, transparent, rgba(250,204,21,0.4), transparent)",
           }}
         />
 
@@ -2192,10 +2566,19 @@ function Footer() {
 export default function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Full-page cartoon canvas animation fixed behind all content */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{ zIndex: 0 }}
+        aria-hidden="true"
+      >
+        <CartoonCanvas />
+      </div>
+
       {/* Scroll progress bar — fixed at very top */}
       <ScrollProgressBar />
       <Navbar />
-      <main>
+      <main style={{ position: "relative", zIndex: 1 }}>
         <HeroSection />
         <EventsSection />
         <PrizesSection />

@@ -19,62 +19,63 @@
   font-display: swap;
 }
 
-/* ─── Design Tokens — Premium Electric Blue ──────────────────────────────── */
+/* ─── Design Tokens — Cartoon Comic Theme ────────────────────────────────── */
 @layer base {
   :root {
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Deep navy background */
-    --background: 0.07 0.025 265;
-    --foreground: 0.96 0.012 220;
+    /* Deep comic purple background */
+    --background: 0.10 0.035 285;
+    --foreground: 0.97 0.008 60;
 
-    --card: 0.10 0.022 260;
-    --card-foreground: 0.94 0.012 220;
+    --card: 0.14 0.040 280;
+    --card-foreground: 0.95 0.010 60;
 
-    --popover: 0.10 0.022 260;
-    --popover-foreground: 0.94 0.012 220;
+    --popover: 0.14 0.040 280;
+    --popover-foreground: 0.95 0.010 60;
 
-    /* Primary = Electric Royal Blue */
-    --primary: 0.62 0.22 255;
-    --primary-foreground: 0.98 0.005 220;
+    /* Primary = Electric Yellow */
+    --primary: 0.85 0.20 95;
+    --primary-foreground: 0.10 0.035 285;
 
-    /* Secondary = Dim navy surface */
-    --secondary: 0.14 0.020 260;
-    --secondary-foreground: 0.90 0.012 220;
+    /* Secondary = Dim purple surface */
+    --secondary: 0.18 0.040 285;
+    --secondary-foreground: 0.90 0.012 60;
 
-    --muted: 0.14 0.020 260;
-    --muted-foreground: 0.55 0.018 245;
+    --muted: 0.18 0.040 285;
+    --muted-foreground: 0.60 0.020 270;
 
-    /* Accent = Electric Cyan-Blue */
-    --accent: 0.72 0.20 215;
-    --accent-foreground: 0.07 0.025 265;
+    /* Accent = Hot Pink */
+    --accent: 0.68 0.28 355;
+    --accent-foreground: 0.98 0.005 0;
 
     --destructive: 0.58 0.245 27;
     --destructive-foreground: 0.985 0 0;
 
-    --border: 0.20 0.025 260;
-    --input: 0.20 0.025 260;
-    --ring: 0.62 0.22 255;
+    --border: 0.25 0.045 285;
+    --input: 0.25 0.045 285;
+    --ring: 0.85 0.20 95;
 
-    --chart-1: 0.62 0.22 255;
-    --chart-2: 0.72 0.20 215;
-    --chart-3: 0.55 0.18 285;
-    --chart-4: 0.50 0.15 230;
-    --chart-5: 0.65 0.19 245;
+    --chart-1: 0.85 0.20 95;
+    --chart-2: 0.68 0.28 355;
+    --chart-3: 0.72 0.25 30;
+    --chart-4: 0.65 0.22 140;
+    --chart-5: 0.75 0.18 255;
 
-    --sidebar: 0.09 0.022 265;
-    --sidebar-foreground: 0.94 0.012 220;
-    --sidebar-primary: 0.62 0.22 255;
-    --sidebar-primary-foreground: 0.98 0.005 220;
-    --sidebar-accent: 0.14 0.020 260;
-    --sidebar-accent-foreground: 0.90 0.012 220;
-    --sidebar-border: 0.20 0.025 260;
-    --sidebar-ring: 0.62 0.22 255;
+    --sidebar: 0.12 0.040 285;
+    --sidebar-foreground: 0.95 0.010 60;
+    --sidebar-primary: 0.85 0.20 95;
+    --sidebar-primary-foreground: 0.10 0.035 285;
+    --sidebar-accent: 0.18 0.040 285;
+    --sidebar-accent-foreground: 0.90 0.012 60;
+    --sidebar-border: 0.25 0.045 285;
+    --sidebar-ring: 0.85 0.20 95;
 
     /* Custom tokens */
     --nav-height: 5rem;
-    --blue: 0.62 0.22 255;
-    --cyan: 0.72 0.20 215;
+    --yellow: 0.85 0.20 95;
+    --pink: 0.68 0.28 355;
+    --orange: 0.72 0.25 30;
     --grain-opacity: 0.03;
   }
 
@@ -113,22 +114,22 @@
     text-wrap: pretty;
   }
 
-  /* Blue glow (replaces gold glow) */
+  /* Yellow glow */
   .glow-gold {
-    box-shadow: 0 0 0 0 oklch(var(--blue) / 0.3);
+    box-shadow: 0 0 0 0 oklch(var(--yellow) / 0.3);
     transition: box-shadow 0.3s ease;
   }
   .glow-gold:hover {
-    box-shadow: 0 0 32px 8px oklch(var(--blue) / 0.45);
+    box-shadow: 0 0 32px 8px oklch(var(--yellow) / 0.5);
   }
 
-  /* Cyan glow */
+  /* Pink glow */
   .glow-cyan {
-    box-shadow: 0 0 0 0 oklch(var(--cyan) / 0.25);
+    box-shadow: 0 0 0 0 oklch(var(--pink) / 0.25);
     transition: box-shadow 0.3s ease;
   }
   .glow-cyan:hover {
-    box-shadow: 0 0 28px 5px oklch(var(--cyan) / 0.40);
+    box-shadow: 0 0 28px 5px oklch(var(--pink) / 0.45);
   }
 
   /* Card hover glow */
@@ -136,29 +137,29 @@
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
   .card-glow-gold:hover {
-    border-color: oklch(var(--blue) / 0.55);
-    box-shadow: 0 0 36px 0 oklch(var(--blue) / 0.15), inset 0 0 24px 0 oklch(var(--blue) / 0.05);
+    border-color: oklch(var(--yellow) / 0.6);
+    box-shadow: 0 0 36px 0 oklch(var(--yellow) / 0.18), inset 0 0 24px 0 oklch(var(--yellow) / 0.06);
   }
 
   .card-glow-cyan {
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
   .card-glow-cyan:hover {
-    border-color: oklch(var(--cyan) / 0.55);
-    box-shadow: 0 0 36px 0 oklch(var(--cyan) / 0.15), inset 0 0 24px 0 oklch(var(--cyan) / 0.05);
+    border-color: oklch(var(--pink) / 0.6);
+    box-shadow: 0 0 36px 0 oklch(var(--pink) / 0.18), inset 0 0 24px 0 oklch(var(--pink) / 0.06);
   }
 
-  /* Gradient text blue (replaces gold gradient) */
+  /* Gradient text — bright yellow/orange */
   .text-gradient-gold {
-    background: linear-gradient(135deg, oklch(0.75 0.24 250) 0%, oklch(0.62 0.22 255) 40%, oklch(0.72 0.20 230) 100%);
+    background: linear-gradient(135deg, #FACC15 0%, #F97316 60%, #FACC15 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Gradient text cyan */
+  /* Gradient text — hot pink/orange */
   .text-gradient-cyan {
-    background: linear-gradient(135deg, oklch(var(--cyan)) 0%, oklch(0.82 0.16 200) 100%);
+    background: linear-gradient(135deg, #EC4899 0%, #F97316 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -172,8 +173,8 @@
 
   /* Animated border glow */
   .border-glow-gold {
-    border-color: oklch(var(--blue) / 0.4);
-    box-shadow: 0 0 20px 0 oklch(var(--blue) / 0.18);
+    border-color: oklch(var(--yellow) / 0.5);
+    box-shadow: 0 0 20px 0 oklch(var(--yellow) / 0.25);
   }
 
   /* Scroll-reveal */
@@ -198,13 +199,44 @@
     );
   }
 
-  /* Premium blue shimmer for logo */
-  .blue-shimmer {
-    animation: blueShimmer 3s ease-in-out infinite;
+  /* Cartoon thick outline text */
+  .text-cartoon-outline {
+    -webkit-text-stroke: 2px #000;
+    paint-order: stroke fill;
   }
-  @keyframes blueShimmer {
-    0%, 100% { filter: brightness(1) drop-shadow(0 0 16px oklch(0.62 0.22 255 / 0.6)); }
-    50% { filter: brightness(1.15) drop-shadow(0 0 32px oklch(0.72 0.20 215 / 0.8)); }
+
+  /* Comic halftone overlay pattern */
+  .comic-halftone {
+    background-image: radial-gradient(circle, oklch(1 0 0 / 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Cartoon card border */
+  .cartoon-card {
+    border: 3px solid oklch(0.15 0 0);
+    box-shadow: 4px 4px 0 oklch(0.15 0 0);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .cartoon-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 oklch(0.15 0 0);
+  }
+
+  /* Cartoon button */
+  .cartoon-btn {
+    border: 3px solid #000;
+    box-shadow: 3px 3px 0 #000;
+    font-weight: 900;
+    border-radius: 50px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cartoon-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 #000;
+  }
+  .cartoon-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #000;
   }
 
   /* ─── Scroll Progress Bar ─────────────────────────────────────────────── */
@@ -212,14 +244,15 @@
     position: fixed;
     top: 0;
     left: 0;
-    height: 3px;
+    height: 4px;
     z-index: 9999;
     background: linear-gradient(90deg,
-      oklch(0.62 0.22 255) 0%,
-      oklch(0.72 0.20 215) 50%,
-      oklch(0.85 0.18 200) 100%
+      #FACC15 0%,
+      #F97316 40%,
+      #EC4899 80%,
+      #FACC15 100%
     );
-    box-shadow: 0 0 10px 2px oklch(0.62 0.22 255 / 0.7);
+    box-shadow: 0 0 10px 2px rgba(250, 204, 21, 0.7);
     transform-origin: left;
     will-change: transform;
   }
@@ -241,18 +274,14 @@
   .glitch-title.glitching::before {
     animation: glitchBefore 0.4s steps(2) forwards;
     clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
-    background: linear-gradient(135deg, oklch(0.75 0.24 250) 0%, oklch(0.62 0.22 255) 40%, oklch(0.72 0.20 230) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #F97316;
+    -webkit-text-stroke: 2px #000;
   }
   .glitch-title.glitching::after {
     animation: glitchAfter 0.4s steps(2) forwards;
     clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
-    background: linear-gradient(135deg, oklch(0.85 0.18 200) 0%, oklch(0.72 0.20 215) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #EC4899;
+    -webkit-text-stroke: 1px #000;
   }
   @keyframes glitchBefore {
     0%   { transform: translateX(0); opacity: 1; }
@@ -277,7 +306,7 @@
   .ripple-wave {
     position: absolute;
     border-radius: 50%;
-    background: oklch(1 0 0 / 0.25);
+    background: oklch(1 0 0 / 0.3);
     transform: scale(0);
     animation: rippleExpand 0.6s ease-out forwards;
     pointer-events: none;
@@ -302,8 +331,8 @@
     background: conic-gradient(
       from var(--card-angle, 0deg),
       transparent 0deg,
-      oklch(0.72 0.20 215 / 0.8) 60deg,
-      oklch(0.62 0.22 255) 120deg,
+      #FACC15 60deg,
+      #F97316 120deg,
       transparent 180deg
     );
     opacity: 0;
@@ -345,22 +374,49 @@
     will-change: transform, opacity;
   }
 
-  /* ─── Sound Wave Animation ────────────────────────────────────────────── */
-  @keyframes waveFlow {
-    0%   { stroke-dashoffset: 200; }
-    100% { stroke-dashoffset: 0; }
+  /* ─── Cartoon Logo Bouncy Glow ────────────────────────────────────────── */
+  @keyframes cartoonGlow {
+    0%, 100% {
+      filter: drop-shadow(0 0 12px rgba(250,204,21,0.6)) drop-shadow(0 0 4px rgba(249,115,22,0.4));
+    }
+    50% {
+      filter: drop-shadow(0 0 28px rgba(250,204,21,0.9)) drop-shadow(0 0 14px rgba(249,115,22,0.6));
+    }
   }
-  @keyframes waveShift {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+  .cartoon-glow {
+    animation: cartoonGlow 2s ease-in-out infinite;
   }
 
-  /* ─── Circuit Board Paths ─────────────────────────────────────────────── */
-  @keyframes circuitFlow {
-    0%   { stroke-dashoffset: 300; opacity: 0; }
-    10%  { opacity: 1; }
-    90%  { opacity: 1; }
-    100% { stroke-dashoffset: 0; opacity: 0; }
+  /* ─── Bouncy entrance ─────────────────────────────────────────────────── */
+  @keyframes cartoonBounce {
+    0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    80% { transform: scale(0.95) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  /* ─── Speech bubble pop ───────────────────────────────────────────────── */
+  @keyframes speechPop {
+    0% { transform: scale(0); opacity: 0; }
+    70% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.9; }
+  }
+
+  /* ─── Gold title shimmer — yellow version ─────────────────────────────── */
+  @keyframes goldShimmer {
+    0%   { filter: drop-shadow(0 0 12px rgba(250,204,21,0.5)); }
+    50%  { filter: drop-shadow(0 0 28px rgba(250,204,21,0.9)) drop-shadow(0 0 60px rgba(249,115,22,0.4)); }
+    100% { filter: drop-shadow(0 0 12px rgba(250,204,21,0.5)); }
+  }
+  .gold-shimmer {
+    animation: goldShimmer 3s ease-in-out infinite;
+  }
+
+  /* ─── Cartoon star spin ───────────────────────────────────────────────── */
+  @keyframes starSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.15); }
+    100% { transform: rotate(360deg) scale(1); }
   }
 
   /* ─── Reduced motion overrides ────────────────────────────────────────── */
@@ -369,7 +425,9 @@
     .glitch-title.glitching::after,
     .ripple-wave,
     .dragon-eye-glow,
-    .scroll-progress-bar {
+    .scroll-progress-bar,
+    .cartoon-glow,
+    .gold-shimmer {
       animation: none;
     }
   }
