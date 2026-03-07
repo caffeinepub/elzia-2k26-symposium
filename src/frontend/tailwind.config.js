@@ -16,8 +16,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Bricolage Grotesque", "system-ui", "sans-serif"],
-        sans: ["Outfit", "system-ui", "sans-serif"],
+        display: ["Playfair Display", "Georgia", "serif"],
+        sans: ["General Sans", "system-ui", "sans-serif"],
       },
       colors: {
         border: "oklch(var(--border))",

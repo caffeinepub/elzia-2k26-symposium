@@ -4,79 +4,78 @@
 
 /* ─── Fonts ──────────────────────────────────────────────────────────────── */
 @font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
-  font-weight: 200 800;
+  font-family: "Playfair Display";
+  src: url("/assets/fonts/PlayfairDisplay.woff2") format("woff2");
+  font-weight: 400 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Outfit";
-  src: url("/assets/fonts/Outfit.woff2") format("woff2");
-  font-weight: 100 900;
+  font-family: "General Sans";
+  src: url("/assets/fonts/GeneralSans.woff2") format("woff2");
+  font-weight: 200 700;
   font-style: normal;
   font-display: swap;
 }
 
-/* ─── Design Tokens — Cartoon Comic Theme ────────────────────────────────── */
+/* ─── Design Tokens — Premium Dark Editorial ─────────────────────────────── */
 @layer base {
   :root {
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Deep comic purple background */
-    --background: 0.10 0.035 285;
-    --foreground: 0.97 0.008 60;
+    /* Near-black with very slight warm tint */
+    --background: 0.08 0.006 260;
+    --foreground: 0.96 0.006 80;
 
-    --card: 0.14 0.040 280;
-    --card-foreground: 0.95 0.010 60;
+    --card: 0.12 0.005 260;
+    --card-foreground: 0.94 0.008 80;
 
-    --popover: 0.14 0.040 280;
-    --popover-foreground: 0.95 0.010 60;
+    --popover: 0.11 0.005 260;
+    --popover-foreground: 0.94 0.008 80;
 
-    /* Primary = Electric Yellow */
-    --primary: 0.85 0.20 95;
-    --primary-foreground: 0.10 0.035 285;
+    /* Primary = Rich warm gold */
+    --primary: 0.78 0.12 82;
+    --primary-foreground: 0.08 0.006 260;
 
-    /* Secondary = Dim purple surface */
-    --secondary: 0.18 0.040 285;
-    --secondary-foreground: 0.90 0.012 60;
+    /* Secondary = Dark surface */
+    --secondary: 0.16 0.006 260;
+    --secondary-foreground: 0.90 0.010 80;
 
-    --muted: 0.18 0.040 285;
-    --muted-foreground: 0.60 0.020 270;
+    --muted: 0.16 0.006 260;
+    --muted-foreground: 0.55 0.012 80;
 
-    /* Accent = Hot Pink */
-    --accent: 0.68 0.28 355;
-    --accent-foreground: 0.98 0.005 0;
+    /* Accent = Soft warm amber */
+    --accent: 0.72 0.10 70;
+    --accent-foreground: 0.08 0.006 260;
 
     --destructive: 0.58 0.245 27;
     --destructive-foreground: 0.985 0 0;
 
-    --border: 0.25 0.045 285;
-    --input: 0.25 0.045 285;
-    --ring: 0.85 0.20 95;
+    --border: 0.22 0.008 260;
+    --input: 0.22 0.008 260;
+    --ring: 0.78 0.12 82;
 
-    --chart-1: 0.85 0.20 95;
-    --chart-2: 0.68 0.28 355;
-    --chart-3: 0.72 0.25 30;
-    --chart-4: 0.65 0.22 140;
-    --chart-5: 0.75 0.18 255;
+    --chart-1: 0.78 0.12 82;
+    --chart-2: 0.65 0.18 220;
+    --chart-3: 0.72 0.14 30;
+    --chart-4: 0.65 0.14 140;
+    --chart-5: 0.75 0.10 300;
 
-    --sidebar: 0.12 0.040 285;
-    --sidebar-foreground: 0.95 0.010 60;
-    --sidebar-primary: 0.85 0.20 95;
-    --sidebar-primary-foreground: 0.10 0.035 285;
-    --sidebar-accent: 0.18 0.040 285;
-    --sidebar-accent-foreground: 0.90 0.012 60;
-    --sidebar-border: 0.25 0.045 285;
-    --sidebar-ring: 0.85 0.20 95;
+    --sidebar: 0.10 0.006 260;
+    --sidebar-foreground: 0.94 0.008 80;
+    --sidebar-primary: 0.78 0.12 82;
+    --sidebar-primary-foreground: 0.08 0.006 260;
+    --sidebar-accent: 0.16 0.006 260;
+    --sidebar-accent-foreground: 0.90 0.010 80;
+    --sidebar-border: 0.22 0.008 260;
+    --sidebar-ring: 0.78 0.12 82;
 
-    /* Custom tokens */
-    --nav-height: 5rem;
-    --yellow: 0.85 0.20 95;
-    --pink: 0.68 0.28 355;
-    --orange: 0.72 0.25 30;
-    --grain-opacity: 0.03;
+    /* Custom semantic tokens */
+    --nav-height: 4.5rem;
+    --gold: 0.78 0.12 82;
+    --gold-light: 0.86 0.10 85;
+    --grain-opacity: 0.025;
   }
 
   * {
@@ -90,17 +89,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-  }
-
-  /* Grain overlay */
-  .grain::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-    opacity: var(--grain-opacity);
-    pointer-events: none;
-    border-radius: inherit;
+    font-feature-settings: "kern" 1, "liga" 1;
   }
 }
 
@@ -114,321 +103,133 @@
     text-wrap: pretty;
   }
 
-  /* Yellow glow */
-  .glow-gold {
-    box-shadow: 0 0 0 0 oklch(var(--yellow) / 0.3);
-    transition: box-shadow 0.3s ease;
-  }
-  .glow-gold:hover {
-    box-shadow: 0 0 32px 8px oklch(var(--yellow) / 0.5);
-  }
-
-  /* Pink glow */
-  .glow-cyan {
-    box-shadow: 0 0 0 0 oklch(var(--pink) / 0.25);
-    transition: box-shadow 0.3s ease;
-  }
-  .glow-cyan:hover {
-    box-shadow: 0 0 28px 5px oklch(var(--pink) / 0.45);
-  }
-
-  /* Card hover glow */
-  .card-glow-gold {
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  .card-glow-gold:hover {
-    border-color: oklch(var(--yellow) / 0.6);
-    box-shadow: 0 0 36px 0 oklch(var(--yellow) / 0.18), inset 0 0 24px 0 oklch(var(--yellow) / 0.06);
-  }
-
-  .card-glow-cyan {
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  .card-glow-cyan:hover {
-    border-color: oklch(var(--pink) / 0.6);
-    box-shadow: 0 0 36px 0 oklch(var(--pink) / 0.18), inset 0 0 24px 0 oklch(var(--pink) / 0.06);
-  }
-
-  /* Gradient text — bright yellow/orange */
-  .text-gradient-gold {
-    background: linear-gradient(135deg, #FACC15 0%, #F97316 60%, #FACC15 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Gradient text — hot pink/orange */
-  .text-gradient-cyan {
-    background: linear-gradient(135deg, #EC4899 0%, #F97316 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Timer display */
+  /* ─── Timer ─────────────────────────────────────────────────────────── */
   .timer-digit {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
   }
 
-  /* Animated border glow */
-  .border-glow-gold {
-    border-color: oklch(var(--yellow) / 0.5);
-    box-shadow: 0 0 20px 0 oklch(var(--yellow) / 0.25);
+  /* ─── Gradient text — warm gold ──────────────────────────────────────── */
+  .text-gradient-gold {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--gold-light)) 0%,
+      oklch(var(--gold)) 50%,
+      oklch(var(--gold-light)) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Scroll-reveal */
+  /* ─── Gradient text — cool silver/white ──────────────────────────────── */
+  .text-gradient-cyan {
+    background: linear-gradient(
+      135deg,
+      oklch(0.90 0.04 220) 0%,
+      oklch(0.75 0.08 220) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ─── Soft card elevation ────────────────────────────────────────────── */
+  .card-elevated {
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.4),
+      0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  .card-elevated:hover {
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.5),
+      0 16px 48px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* ─── Gold border glow on hover ─────────────────────────────────────── */
+  .card-glow-gold {
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.3s ease;
+  }
+  .card-glow-gold:hover {
+    border-color: oklch(var(--gold) / 0.55);
+    box-shadow:
+      0 0 0 1px oklch(var(--gold) / 0.12),
+      0 8px 40px oklch(var(--gold) / 0.10),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* ─── Silver/cool border glow on hover ──────────────────────────────── */
+  .card-glow-cyan {
+    transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.3s ease;
+  }
+  .card-glow-cyan:hover {
+    border-color: oklch(0.65 0.08 220 / 0.55);
+    box-shadow:
+      0 0 0 1px oklch(0.65 0.08 220 / 0.12),
+      0 8px 40px oklch(0.65 0.08 220 / 0.10),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* ─── Premium gold shimmer for title ────────────────────────────────── */
+  @keyframes goldShimmer {
+    0%, 100% {
+      text-shadow:
+        0 0 20px oklch(var(--gold) / 0.4),
+        0 0 60px oklch(var(--gold) / 0.15);
+      filter: brightness(1.05);
+    }
+    50% {
+      text-shadow:
+        0 0 30px oklch(var(--gold) / 0.6),
+        0 0 80px oklch(var(--gold) / 0.25),
+        0 0 120px oklch(var(--gold-light) / 0.1);
+      filter: brightness(1.15);
+    }
+  }
+  .gold-shimmer {
+    animation: goldShimmer 3.5s ease-in-out infinite;
+  }
+
+  /* ─── Subtle section divider line ───────────────────────────────────── */
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(var(--gold) / 0.35) 30%,
+      oklch(var(--gold) / 0.35) 70%,
+      transparent 100%
+    );
+  }
+
+  /* ─── Reveal on scroll ───────────────────────────────────────────────── */
   .reveal {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(20px);
   }
   .reveal.in-view {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 0.7s ease, transform 0.7s ease;
+    transition: opacity 0.65s ease, transform 0.65s ease;
   }
 
-  /* Scanline effect for hero */
-  .scanlines {
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 2px,
-      oklch(0 0 0 / 0.04) 2px,
-      oklch(0 0 0 / 0.04) 4px
-    );
-  }
-
-  /* Cartoon thick outline text */
-  .text-cartoon-outline {
-    -webkit-text-stroke: 2px #000;
-    paint-order: stroke fill;
-  }
-
-  /* Comic halftone overlay pattern */
-  .comic-halftone {
-    background-image: radial-gradient(circle, oklch(1 0 0 / 0.03) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-
-  /* Cartoon card border */
-  .cartoon-card {
-    border: 3px solid oklch(0.15 0 0);
-    box-shadow: 4px 4px 0 oklch(0.15 0 0);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .cartoon-card:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 oklch(0.15 0 0);
-  }
-
-  /* Cartoon button */
-  .cartoon-btn {
-    border: 3px solid #000;
-    box-shadow: 3px 3px 0 #000;
-    font-weight: 900;
-    border-radius: 50px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-  .cartoon-btn:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 #000;
-  }
-  .cartoon-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 #000;
-  }
-
-  /* ─── Scroll Progress Bar ─────────────────────────────────────────────── */
-  .scroll-progress-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 4px;
-    z-index: 9999;
-    background: linear-gradient(90deg,
-      #FACC15 0%,
-      #F97316 40%,
-      #EC4899 80%,
-      #FACC15 100%
-    );
-    box-shadow: 0 0 10px 2px rgba(250, 204, 21, 0.7);
-    transform-origin: left;
-    will-change: transform;
-  }
-
-  /* ─── Glitch Text Effect ──────────────────────────────────────────────── */
-  .glitch-title {
-    position: relative;
-  }
-  .glitch-title::before,
-  .glitch-title::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-  }
-  .glitch-title.glitching::before {
-    animation: glitchBefore 0.4s steps(2) forwards;
-    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
-    color: #F97316;
-    -webkit-text-stroke: 2px #000;
-  }
-  .glitch-title.glitching::after {
-    animation: glitchAfter 0.4s steps(2) forwards;
-    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
-    color: #EC4899;
-    -webkit-text-stroke: 1px #000;
-  }
-  @keyframes glitchBefore {
-    0%   { transform: translateX(0); opacity: 1; }
-    25%  { transform: translateX(-4px); opacity: 0.8; }
-    50%  { transform: translateX(3px); opacity: 0.9; }
-    75%  { transform: translateX(-2px); opacity: 0.7; }
-    100% { transform: translateX(0); opacity: 0; }
-  }
-  @keyframes glitchAfter {
-    0%   { transform: translateX(0); opacity: 1; }
-    25%  { transform: translateX(4px); opacity: 0.8; }
-    50%  { transform: translateX(-3px); opacity: 0.9; }
-    75%  { transform: translateX(2px); opacity: 0.7; }
-    100% { transform: translateX(0); opacity: 0; }
-  }
-
-  /* ─── Ripple Button Effect ────────────────────────────────────────────── */
-  .btn-ripple {
-    position: relative;
-    overflow: hidden;
-  }
-  .ripple-wave {
-    position: absolute;
-    border-radius: 50%;
-    background: oklch(1 0 0 / 0.3);
-    transform: scale(0);
-    animation: rippleExpand 0.6s ease-out forwards;
-    pointer-events: none;
-  }
-  @keyframes rippleExpand {
-    to {
-      transform: scale(4);
-      opacity: 0;
-    }
-  }
-
-  /* ─── Energy Card Border Sweep ───────────────────────────────────────── */
-  .energy-card {
-    position: relative;
-    overflow: hidden;
-  }
-  .energy-card::before {
-    content: "";
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    background: conic-gradient(
-      from var(--card-angle, 0deg),
-      transparent 0deg,
-      #FACC15 60deg,
-      #F97316 120deg,
-      transparent 180deg
-    );
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 0;
-    animation: none;
-  }
-  .energy-card:hover::before {
-    opacity: 1;
-    animation: borderSweep 1.5s linear infinite;
-  }
-  @keyframes borderSweep {
-    from { --card-angle: 0deg; }
-    to   { --card-angle: 360deg; }
-  }
-
-  /* ─── Dragon Eye Pulse ────────────────────────────────────────────────── */
-  @keyframes eyePulse {
-    0%, 100% {
-      box-shadow: 0 0 4px 2px rgba(220, 38, 38, 0.6),
-                  0 0 12px 6px rgba(220, 38, 38, 0.3),
-                  0 0 24px 12px rgba(220, 38, 38, 0.1);
-      opacity: 0.8;
-    }
-    50% {
-      box-shadow: 0 0 8px 4px rgba(239, 68, 68, 0.9),
-                  0 0 20px 10px rgba(220, 38, 38, 0.5),
-                  0 0 40px 20px rgba(185, 28, 28, 0.2);
-      opacity: 1;
-    }
-  }
-  .dragon-eye-glow {
-    animation: eyePulse 2s ease-in-out infinite;
-  }
-
-  /* ─── Section Header Char Reveal ─────────────────────────────────────── */
-  .char-reveal-char {
-    display: inline-block;
-    will-change: transform, opacity;
-  }
-
-  /* ─── Cartoon Logo Bouncy Glow ────────────────────────────────────────── */
-  @keyframes cartoonGlow {
-    0%, 100% {
-      filter: drop-shadow(0 0 12px rgba(250,204,21,0.6)) drop-shadow(0 0 4px rgba(249,115,22,0.4));
-    }
-    50% {
-      filter: drop-shadow(0 0 28px rgba(250,204,21,0.9)) drop-shadow(0 0 14px rgba(249,115,22,0.6));
-    }
-  }
-  .cartoon-glow {
-    animation: cartoonGlow 2s ease-in-out infinite;
-  }
-
-  /* ─── Bouncy entrance ─────────────────────────────────────────────────── */
-  @keyframes cartoonBounce {
-    0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
-    60% { transform: scale(1.1) rotate(2deg); opacity: 1; }
-    80% { transform: scale(0.95) rotate(-1deg); }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
-  }
-
-  /* ─── Speech bubble pop ───────────────────────────────────────────────── */
-  @keyframes speechPop {
-    0% { transform: scale(0); opacity: 0; }
-    70% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.9; }
-  }
-
-  /* ─── Gold title shimmer — yellow version ─────────────────────────────── */
-  @keyframes goldShimmer {
-    0%   { filter: drop-shadow(0 0 12px rgba(250,204,21,0.5)); }
-    50%  { filter: drop-shadow(0 0 28px rgba(250,204,21,0.9)) drop-shadow(0 0 60px rgba(249,115,22,0.4)); }
-    100% { filter: drop-shadow(0 0 12px rgba(250,204,21,0.5)); }
-  }
-  .gold-shimmer {
-    animation: goldShimmer 3s ease-in-out infinite;
-  }
-
-  /* ─── Cartoon star spin ───────────────────────────────────────────────── */
-  @keyframes starSpin {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.15); }
-    100% { transform: rotate(360deg) scale(1); }
-  }
-
-  /* ─── Reduced motion overrides ────────────────────────────────────────── */
+  /* ─── Reduced motion ──────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
-    .glitch-title.glitching::before,
-    .glitch-title.glitching::after,
-    .ripple-wave,
-    .dragon-eye-glow,
-    .scroll-progress-bar,
-    .cartoon-glow,
-    .gold-shimmer {
+    .gold-shimmer,
+    .card-elevated,
+    .card-glow-gold,
+    .card-glow-cyan {
       animation: none;
+      transition: none;
+    }
+    .card-elevated:hover,
+    .card-glow-gold:hover,
+    .card-glow-cyan:hover {
+      transform: none;
     }
   }
 }
